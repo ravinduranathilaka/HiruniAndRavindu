@@ -234,6 +234,7 @@ footer small { display:block; margin-top:1.5rem; color:#897d6b; font-size:.62rem
 .admin-header-actions { display:flex; align-items:center; gap:.75rem; }
 .admin-role { padding:.55rem .7rem; border:1px solid #63716d; border-radius:99px; color:#d7dfdc; font-size:.6rem; letter-spacing:.12em; text-transform:uppercase; }
 .admin-quiet-button { padding:.55rem .15rem; border:0; background:transparent; color:#d7dfdc; cursor:pointer; font-size:.65rem; }
+.admin-quiet-button:disabled { cursor:wait; opacity:.55; }
 .admin-tabs { position:sticky; z-index:20; top:0; margin:0 calc(-1 * max(1.25rem,calc((100vw - 1380px)/2))) 2.5rem; padding:0 max(1.25rem,calc((100vw - 1380px)/2)); display:flex; overflow-x:auto; background:#fffefa; border-bottom:1px solid var(--admin-line); }
 .admin-tabs a { position:relative; flex:0 0 auto; padding:1.2rem 1.35rem 1.05rem; color:#746d61; font-size:.68rem; letter-spacing:.05em; }
 .admin-tabs a:first-child { padding-left:0; }
@@ -257,6 +258,11 @@ footer small { display:block; margin-top:1.5rem; color:#897d6b; font-size:.62rem
 .admin-span-2 { grid-column:1/-1; }
 .admin-create form > button { margin-top:1rem; }
 .admin-form-hint { margin:.65rem 0 0; color:#867c6d; font-size:.62rem; line-height:1.5; }
+.admin-button-spinner { width:.85rem; height:.85rem; display:inline-block; margin-right:.45rem; border:2px solid #ffffff66; border-top-color:white; border-radius:50%; vertical-align:-.12rem; animation:admin-spin .7s linear infinite; }
+.admin-form-message { margin:.7rem 0 0; font-size:.65rem; }
+.admin-form-message.success { color:var(--admin-green); }
+.admin-form-message.error { color:var(--admin-red); }
+@keyframes admin-spin { to { transform:rotate(360deg); } }
 .admin-table-wrap { overflow:auto; border:1px solid var(--admin-line); background:#fffefa; }
 .admin-table { width:100%; border-collapse:collapse; font-size:.72rem; }
 .admin-table th { padding:.8rem 1rem; border-bottom:1px solid var(--admin-line); background:#eeebe3; color:#726b60; font-size:.58rem; font-weight:400; letter-spacing:.12em; text-align:left; text-transform:uppercase; white-space:nowrap; }

@@ -5,7 +5,6 @@ import { prisma } from "@/lib/prisma";
 import { Icon } from "../icons";
 import { getAdminRole } from "./auth";
 import {
-  createExpectedGuest,
   createParty,
   createRsvp,
   deleteExpectedGuest,
@@ -18,8 +17,9 @@ import {
 } from "./actions";
 import { LoginForm } from "./login-form";
 import { ExpectedGuestFields } from "./expected-guest-fields";
+import { AddExpectedGuestForm } from "./add-expected-guest-form";
 import { invitationName } from "@/lib/invitation";
-import { AdminModal, CopyInvitationLink } from "./admin-controls";
+import { AdminModal, AdminSubmitButton, CopyInvitationLink } from "./admin-controls";
 
 export const metadata: Metadata = { title: "Guest ledger — Hiruni & Ravindu" };
 
@@ -190,7 +190,7 @@ export default async function AdminPage({
         </div>
         <div className="admin-header-actions">
           <span className="admin-role">{role === "super" ? "Super admin" : "Admin"}</span>
-          <form action={logout}><button className="admin-quiet-button" type="submit">Sign out</button></form>
+          <form action={logout}><AdminSubmitButton className="admin-quiet-button">Sign out</AdminSubmitButton></form>
         </div>
       </header>
 
@@ -208,11 +208,7 @@ export default async function AdminPage({
             <div><p className="admin-kicker">Invitation list</p><h2>Guests</h2></div>
             <details className="admin-create">
               <summary>Add guest</summary>
-              <form action={createExpectedGuest}>
-                <ExpectedGuestFields parties={parties} />
-                <button type="submit" disabled={!parties.length}>Add guest</button>
-                {!parties.length && <p className="admin-form-hint">A super admin must add an inviting party first.</p>}
-              </form>
+              <AddExpectedGuestForm parties={parties} />
             </details>
           </div>
 
@@ -235,8 +231,8 @@ export default async function AdminPage({
                       <td className="admin-message">{guest.rsvp?.message || "—"}</td>
                       <td>{guest.rsvp?.createdAt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) ?? "—"}</td>
                       <td><AdminModal title={`Edit ${invitationName(guest)}`}>
-                        <section className="admin-dialog-section"><h3>Invitation</h3><form action={updateExpectedGuest.bind(null, guest.id)}><ExpectedGuestFields guest={guest} parties={parties} /><div className="admin-form-actions"><button type="submit">Save invitation</button><button className="danger" formAction={deleteExpectedGuest.bind(null, guest.id)}>Delete guest</button></div></form></section>
-                        <section className="admin-dialog-section"><h3>RSVP</h3>{guest.rsvp ? <form action={updateRsvp.bind(null, guest.rsvp.id)}><RsvpFields response={guest.rsvp} guests={guestOptions} returnTab="manage" /><div className="admin-form-actions"><button type="submit">Save RSVP</button><button className="danger" formAction={deleteRsvp.bind(null, guest.rsvp.id)}>Delete RSVP</button></div></form> : <form action={createRsvp}><RsvpFields guests={guestOptions} returnTab="manage" defaultGuest={guest.id} defaultName={invitationName(guest)} defaultCount={guest.invitedPersons} /><button type="submit">Add RSVP</button></form>}</section>
+                        <section className="admin-dialog-section"><h3>Invitation</h3><form action={updateExpectedGuest.bind(null, guest.id)}><ExpectedGuestFields guest={guest} parties={parties} /><div className="admin-form-actions"><AdminSubmitButton>Save invitation</AdminSubmitButton><AdminSubmitButton className="danger" formAction={deleteExpectedGuest.bind(null, guest.id)}>Delete guest</AdminSubmitButton></div></form></section>
+                        <section className="admin-dialog-section"><h3>RSVP</h3>{guest.rsvp ? <form action={updateRsvp.bind(null, guest.rsvp.id)}><RsvpFields response={guest.rsvp} guests={guestOptions} returnTab="manage" /><div className="admin-form-actions"><AdminSubmitButton>Save RSVP</AdminSubmitButton><AdminSubmitButton className="danger" formAction={deleteRsvp.bind(null, guest.rsvp.id)}>Delete RSVP</AdminSubmitButton></div></form> : <form action={createRsvp}><RsvpFields guests={guestOptions} returnTab="manage" defaultGuest={guest.id} defaultName={invitationName(guest)} defaultCount={guest.invitedPersons} /><AdminSubmitButton>Add RSVP</AdminSubmitButton></form>}</section>
                       </AdminModal></td>
                     </tr>
                   );
@@ -251,7 +247,7 @@ export default async function AdminPage({
         <section className="admin-panel">
           <div className="admin-section-heading">
             <div><p className="admin-kicker">Unmatched submissions</p><h2>Unknown RSVP</h2></div>
-            <details className="admin-create"><summary>Add response</summary><form action={createRsvp}><RsvpFields guests={guestOptions} returnTab="manage" /><button type="submit">Add response</button></form></details>
+            <details className="admin-create"><summary>Add response</summary><form action={createRsvp}><RsvpFields guests={guestOptions} returnTab="manage" /><AdminSubmitButton>Add response</AdminSubmitButton></form></details>
           </div>
 
           {!unmatchedResponses.length ? <Empty>No unknown RSVP submissions.</Empty> : (
@@ -267,7 +263,7 @@ export default async function AdminPage({
                     <td>{response.guestCount}</td>
                     <td className="admin-message">{response.message || "—"}</td>
                     <td>{response.createdAt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</td>
-                    <td><AdminModal title={`Edit RSVP from ${response.fullName}`}><form action={updateRsvp.bind(null, response.id)}><RsvpFields response={response} guests={guestOptions} returnTab="manage" /><div className="admin-form-actions"><button type="submit">Save RSVP</button><button className="danger" formAction={deleteRsvp.bind(null, response.id)}>Delete RSVP</button></div></form></AdminModal></td>
+                    <td><AdminModal title={`Edit RSVP from ${response.fullName}`}><form action={updateRsvp.bind(null, response.id)}><RsvpFields response={response} guests={guestOptions} returnTab="manage" /><div className="admin-form-actions"><AdminSubmitButton>Save RSVP</AdminSubmitButton><AdminSubmitButton className="danger" formAction={deleteRsvp.bind(null, response.id)}>Delete RSVP</AdminSubmitButton></div></form></AdminModal></td>
                   </tr>;
                 })}</tbody>
               </table>
@@ -280,9 +276,9 @@ export default async function AdminPage({
         <section className="admin-panel">
           <div className="admin-section-heading">
             <div><p className="admin-kicker">Super admin</p><h2>Inviting party management</h2></div>
-            <details className="admin-create"><summary>Add inviting party</summary><form action={createParty}><div className="admin-form-grid"><label>Party name<input name="name" required maxLength={120} /></label><label>Maximum guests<input name="maxGuestCount" type="number" min="0" max="9999" required /></label></div><button type="submit">Add party</button></form></details>
+            <details className="admin-create"><summary>Add inviting party</summary><form action={createParty}><div className="admin-form-grid"><label>Party name<input name="name" required maxLength={120} /></label><label>Maximum guests<input name="maxGuestCount" type="number" min="0" max="9999" required /></label></div><AdminSubmitButton>Add party</AdminSubmitButton></form></details>
           </div>
-          {!parties.length ? <Empty>No inviting parties yet. Add the first one above.</Empty> : <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Inviting party</th><th>Guest entries</th><th>Invited persons</th><th>Maximum guests</th><th><span className="sr-only">Actions</span></th></tr></thead><tbody>{parties.map((party) => <tr key={party.id}><td className="admin-primary-cell">{party.name}</td><td>{party.expectedGuests.length}</td><td>{party.expectedGuests.reduce((sum, guest) => sum + guest.invitedPersons, 0)}</td><td>{party.maxGuestCount}</td><td><AdminModal title={`Edit ${party.name}`}><form action={updateParty.bind(null, party.id)}><div className="admin-form-grid"><label>Name<input name="name" defaultValue={party.name} required /></label><label>Maximum guests<input name="maxGuestCount" type="number" min="0" defaultValue={party.maxGuestCount} required /></label></div><div className="admin-form-actions"><button type="submit">Save party</button><button className="danger" formAction={deleteParty.bind(null, party.id)}>Delete party</button></div><p className="admin-form-hint">Deleting a party also removes its guest entries. Matched RSVP responses remain unmatched.</p></form></AdminModal></td></tr>)}</tbody></table></div>}
+          {!parties.length ? <Empty>No inviting parties yet. Add the first one above.</Empty> : <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Inviting party</th><th>Guest entries</th><th>Invited persons</th><th>Maximum guests</th><th><span className="sr-only">Actions</span></th></tr></thead><tbody>{parties.map((party) => <tr key={party.id}><td className="admin-primary-cell">{party.name}</td><td>{party.expectedGuests.length}</td><td>{party.expectedGuests.reduce((sum, guest) => sum + guest.invitedPersons, 0)}</td><td>{party.maxGuestCount}</td><td><AdminModal title={`Edit ${party.name}`}><form action={updateParty.bind(null, party.id)}><div className="admin-form-grid"><label>Name<input name="name" defaultValue={party.name} required /></label><label>Maximum guests<input name="maxGuestCount" type="number" min="0" defaultValue={party.maxGuestCount} required /></label></div><div className="admin-form-actions"><AdminSubmitButton>Save party</AdminSubmitButton><AdminSubmitButton className="danger" formAction={deleteParty.bind(null, party.id)}>Delete party</AdminSubmitButton></div><p className="admin-form-hint">Deleting a party also removes its guest entries. Matched RSVP responses remain unmatched.</p></form></AdminModal></td></tr>)}</tbody></table></div>}
         </section>
       )}
 

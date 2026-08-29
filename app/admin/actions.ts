@@ -9,6 +9,11 @@ import { INVITATION_ADDITIONS, invitationGuestCount, NAME_PREFIXES } from "@/lib
 import { createAdminSession, deleteAdminSession, requireAdmin, roleForPassword } from "./auth";
 
 export type LoginState = { error?: string };
+export type CreateExpectedGuestState = {
+  status: "idle" | "error" | "success";
+  message?: string;
+  guestId?: string;
+};
 
 const text = z.string().trim().min(1).max(120);
 const id = z.string().min(1);
@@ -61,23 +66,30 @@ export async function logout() {
   redirect("/admin");
 }
 
-export async function createExpectedGuest(formData: FormData) {
+export async function createExpectedGuest(
+  state: CreateExpectedGuestState,
+  formData: FormData,
+): Promise<CreateExpectedGuestState> {
   await requireAdmin();
   const result = expectedGuestSchema.safeParse({
     ...Object.fromEntries(formData),
     namePrefix: formData.get("namePrefix") || null,
     addition: formData.get("addition") || null,
   });
-  if (!result.success) destination("expected", undefined, "Check the invitation name, addition, and guest count.");
-  const slug = slugify(result.data!.name);
-  if (!slug) destination("expected", undefined, "The name must contain letters or numbers for its invitation link.");
-  try {
-    await prisma.expectedGuest.create({ data: { ...result.data!, slug } });
-  } catch (error) {
-    destination("expected", undefined, databaseError(error));
+  if (!result.success) {
+    return { status: "error", message: "Check the invitation name, addition, and guest count.", guestId: state.guestId };
   }
-  revalidatePath("/admin");
-  destination("expected", "Expected guest added.");
+  const slug = slugify(result.data!.name);
+  if (!slug) {
+    return { status: "error", message: "The name must contain letters or numbers for its invitation link.", guestId: state.guestId };
+  }
+  try {
+    const guest = await prisma.expectedGuest.create({ data: { ...result.data!, slug }, select: { id: true } });
+    revalidatePath("/admin");
+    return { status: "success", message: "Guest added.", guestId: guest.id };
+  } catch (error) {
+    return { status: "error", message: databaseError(error), guestId: state.guestId };
+  }
 }
 
 export async function updateExpectedGuest(guestId: string, formData: FormData) {
@@ -101,7 +113,7 @@ export async function updateExpectedGuest(guestId: string, formData: FormData) {
 
 export async function deleteExpectedGuest(guestId: string) {
   await requireAdmin();
-  await prisma.expectedGuest.delete({ where: { id: guestId } });
+  await prisma.expectedGuest.deleteMany({ where: { id: guestId } });
   revalidatePath("/admin");
   destination("expected", "Expected guest deleted.");
 }
@@ -154,7 +166,7 @@ export async function updateRsvp(rsvpId: string, formData: FormData) {
 export async function deleteRsvp(rsvpId: string, formData: FormData) {
   await requireAdmin();
   const tab = String(formData.get("returnTab") ?? "rsvp");
-  await prisma.rsvp.delete({ where: { id: rsvpId } });
+  await prisma.rsvp.deleteMany({ where: { id: rsvpId } });
   revalidatePath("/admin");
   destination(tab, "Response deleted.");
 }
@@ -187,7 +199,7 @@ export async function updateParty(partyId: string, formData: FormData) {
 
 export async function deleteParty(partyId: string) {
   await requireAdmin(true);
-  await prisma.invitingParty.delete({ where: { id: partyId } });
+  await prisma.invitingParty.deleteMany({ where: { id: partyId } });
   revalidatePath("/admin");
   destination("parties", "Inviting party deleted.");
 }

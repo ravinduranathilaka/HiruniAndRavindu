@@ -1,6 +1,19 @@
 "use client";
 
-import { useId, useRef, useState, type ReactNode } from "react";
+import { useId, useRef, useState, type ComponentProps, type ReactNode } from "react";
+import { useFormStatus } from "react-dom";
+
+export function AdminSubmitButton(props: ComponentProps<"button">) {
+  const { pending } = useFormStatus();
+  const { children, disabled, ...buttonProps } = props;
+
+  return (
+    <button {...buttonProps} type={props.type ?? "submit"} disabled={disabled || pending}>
+      {pending && <span className="admin-button-spinner" aria-hidden="true" />}
+      {pending ? "Working…" : children}
+    </button>
+  );
+}
 
 export function AdminModal({ label = "Edit", title, children }: { label?: string; title: string; children: ReactNode }) {
   const dialog = useRef<HTMLDialogElement>(null);
