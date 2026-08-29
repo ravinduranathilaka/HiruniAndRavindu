@@ -1,11 +1,13 @@
 "use server";
 
+import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-import { slugify } from "@/lib/slug";
+import { createInvitationSlug } from "@/lib/slug";
 import { INVITATION_ADDITIONS, invitationGuestCount, NAME_PREFIXES } from "@/lib/invitation";
+import { normalizeSriLankanPhone, SRI_LANKAN_PHONE_NUMBER } from "@/lib/phone";
 import { createAdminSession, deleteAdminSession, requireAdmin, roleForPassword } from "./auth";
 
 export type LoginState = { error?: string };
@@ -18,9 +20,6 @@ export type CreateExpectedGuestState = {
 const text = z.string().trim().min(1).max(120);
 const id = z.string().min(1);
 const count = z.coerce.number().int().min(0).max(9999);
-const normalizePhoneNumber = (value: string) =>
-  value.startsWith("+") ? value.replace(/[\s()-]/g, "") : `+94${value.replace(/\D/g, "").replace(/^(?:0094|94|0)/, "")}`;
-
 const expectedGuestSchema = z.object({
   namePrefix: z.enum(NAME_PREFIXES).nullable(),
   name: text,
@@ -31,7 +30,7 @@ const expectedGuestSchema = z.object({
 const partySchema = z.object({ name: text, maxGuestCount: count });
 const rsvpSchema = z.object({
   fullName: text,
-  phoneNumber: z.string().transform(normalizePhoneNumber).pipe(z.string().regex(/^\+\d{9,15}$/)),
+  phoneNumber: z.string().transform(normalizeSriLankanPhone).pipe(z.string().regex(SRI_LANKAN_PHONE_NUMBER)),
   email: z.string().trim().max(254).refine((value) => !value || z.email().safeParse(value).success),
   attending: z.enum(["true", "false"]),
   whoAttending: z.enum(["ONLY_MYSELF", "MYSELF_AND_OTHER_INVITEES", "COMPLICATED"]).optional(),
@@ -49,7 +48,7 @@ const destination = (tab: string, notice?: string, error?: string): never => {
 
 const databaseError = (error: unknown) => {
   if (typeof error === "object" && error && "code" in error && error.code === "P2002") {
-    return "That phone number, party name, guest name, or invitation match is already in use.";
+    return "That phone number, party name, or invitation match is already in use.";
   }
   return "The change could not be saved.";
 };
@@ -79,12 +78,12 @@ export async function createExpectedGuest(
   if (!result.success) {
     return { status: "error", message: "Check the invitation name, addition, and guest count.", guestId: state.guestId };
   }
-  const slug = slugify(result.data!.name);
+  const slug = createInvitationSlug(result.data.name, randomBytes(6).toString("hex"));
   if (!slug) {
     return { status: "error", message: "The name must contain letters or numbers for its invitation link.", guestId: state.guestId };
   }
   try {
-    const guest = await prisma.expectedGuest.create({ data: { ...result.data!, slug }, select: { id: true } });
+    const guest = await prisma.expectedGuest.create({ data: { ...result.data, slug }, select: { id: true } });
     revalidatePath("/admin");
     return { status: "success", message: "Guest added.", guestId: guest.id };
   } catch (error) {
@@ -100,10 +99,8 @@ export async function updateExpectedGuest(guestId: string, formData: FormData) {
     addition: formData.get("addition") || null,
   });
   if (!result.success) destination("expected", undefined, "Check the invitation name, addition, and guest count.");
-  const slug = slugify(result.data!.name);
-  if (!slug) destination("expected", undefined, "The name must contain letters or numbers for its invitation link.");
   try {
-    await prisma.expectedGuest.update({ where: { id: guestId }, data: { ...result.data!, slug } });
+    await prisma.expectedGuest.update({ where: { id: guestId }, data: result.data! });
   } catch (error) {
     destination("expected", undefined, databaseError(error));
   }

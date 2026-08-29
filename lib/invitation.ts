@@ -9,6 +9,11 @@ export function invitationGuestCount(addition?: string | null, requestedCount?: 
   return Math.min(10, Math.max(2, requestedCount ?? 2));
 }
 
+export function rsvpGuestCount(attending: boolean, whoAttending?: string, invitedPersons = 1) {
+  if (!attending) return 0;
+  return whoAttending === "MYSELF_AND_OTHER_INVITEES" ? invitedPersons : 1;
+}
+
 export function invitationName(guest: {
   name: string;
   namePrefix?: string | null;

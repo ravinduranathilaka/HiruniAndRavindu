@@ -2,14 +2,13 @@
 
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-
-const normalizePhoneNumber = (value: string) =>
-  `+94${value.replace(/\D/g, "").replace(/^(?:0094|94|0)/, "")}`;
+import { rsvpGuestCount } from "@/lib/invitation";
+import { normalizeSriLankanPhone, SRI_LANKAN_PHONE_NUMBER } from "@/lib/phone";
 
 const rsvpSchema = z.object({
   fullName: z.string().trim().min(2, "Enter your full name").max(120),
-  phoneNumber: z.string().transform(normalizePhoneNumber)
-    .pipe(z.string().regex(/^\+94\d{9,10}$/, "Enter a valid Sri Lankan phone number")),
+  phoneNumber: z.string().transform(normalizeSriLankanPhone)
+    .pipe(z.string().regex(SRI_LANKAN_PHONE_NUMBER, "Enter a valid Sri Lankan phone number")),
   email: z.string().trim().max(254).refine(
     (value) => value === "" || z.email().safeParse(value).success,
     "Enter a valid email address",
@@ -60,15 +59,16 @@ export async function submitRsvp(
 
   try {
     const expectedGuest = invitationSlug
-      ? await prisma.expectedGuest.findUnique({ where: { slug: invitationSlug }, select: { id: true } })
+      ? await prisma.expectedGuest.findUnique({ where: { slug: invitationSlug }, select: { id: true, invitedPersons: true } })
       : null;
+    const isAttending = attending === "yes";
 
     await prisma.rsvp.create({
       data: {
         ...data,
-        attending: attending === "yes",
-        whoAttending: attending === "yes" ? whoAttending : null,
-        guestCount: attending === "yes" ? 1 : 0,
+        attending: isAttending,
+        whoAttending: isAttending ? whoAttending : null,
+        guestCount: rsvpGuestCount(isAttending, whoAttending, expectedGuest?.invitedPersons),
         email: email || null,
         message: message || null,
         expectedGuestId: expectedGuest?.id ?? null,

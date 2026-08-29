@@ -1,46 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Hiruni & Ravindu wedding invitation
 
-## Getting Started
+A Next.js wedding invitation with personalized guest links, public RSVP submission, and a password-protected guest ledger backed by PostgreSQL and Prisma.
 
-First, run the development server:
+## Local setup
+
+Requirements: Node.js 22.6 or newer and a PostgreSQL database.
 
 ```bash
+npm ci
+cp .env.example .env
+npx prisma migrate deploy
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). The guest ledger is at [http://localhost:3000/admin](http://localhost:3000/admin).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+On Windows PowerShell, use `Copy-Item .env.example .env` instead of `cp`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment variables
 
-## Learn More
+- `DATABASE_URL`: pooled application database connection used at runtime.
+- `DIRECT_URL`: direct database connection used by Prisma migrations.
+- `ADMIN_PASSWORD`: password for guest and RSVP management.
+- `SUPER_ADMIN_PASSWORD`: separate password that can also manage inviting parties.
+- `ROOT_DOMAIN`: optional bare production domain, such as `wedding.example.com`.
 
-To learn more about Next.js, take a look at the following resources:
+Keep real credentials in `.env` locally and in the deployment provider's secret store. Do not commit them.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Commands
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run dev        # development server
+npm run lint       # ESLint
+npm run typecheck  # TypeScript
+npm test           # unit tests
+npm run build      # Prisma generation and production build
+npm start          # serve the production build
+```
 
 ## Personalized invitation links
 
-Set `ROOT_DOMAIN` to the bare production domain (for example, `wedding.example.com`) and configure `*.wedding.example.com` as a wildcard domain in DNS and on the hosting provider. Admin-created guests then receive links such as `jane-doe.wedding.example.com`. `/invite/jane-doe` remains available as a direct fallback.
+Without `ROOT_DOMAIN`, guest links use `/invite/<slug>`. To use links such as `jane-doe-a1b2c3d4e5f6.wedding.example.com`, configure `ROOT_DOMAIN`, wildcard DNS for `*.wedding.example.com`, and the same wildcard domain on the hosting provider.
 
-Apply database migrations during deployment:
+New links include a random suffix and remain stable when a guest's name changes.
+
+## Deployment
+
+Apply committed migrations before starting a new release:
 
 ```bash
 npx prisma migrate deploy
 ```
+
+The CI workflow runs linting, type-checking, tests, and a production build. The scheduled Supabase workflow requires a repository secret named `DIRECT_URL`.

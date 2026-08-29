@@ -16,7 +16,7 @@ const timeline = [
   ["9:30 AM", "pin", "We Welcome You", "Welcome & seating"],
   ["9:50 AM", "heart", "We Marry", "Sacred vows on Poruwa"],
   ["10:25 AM", "glass", "We Raise a Toast", "Drinks & celebrations begin"],
-  ["11:30 PM", "utensils", "We Dine", "Delightful wedding feast"],
+  ["11:30 AM", "utensils", "We Dine", "Delightful wedding feast"],
   ["12:30 PM", "music", "We Dance", "Celebrate with music & joy"],
   ["01:15 PM", "sparkles", "We Celebrate", "The ceremonial gathering"],
   ["03:20 PM", "wave", "We Say Goodbye", "A beautiful send-off"],
@@ -140,12 +140,12 @@ export default function Home({ inviteeName, invitationSlug }: { inviteeName?: st
 
   return (
     <main>
-      <audio ref={envelopeSound} src="/img/envelope.mp3" preload="auto" />
-      <audio ref={backgroundMusic} src="/img/background.mp3" preload="auto" loop />
+      <audio ref={envelopeSound} src="/img/envelope.mp3" preload="none" />
+      <audio ref={backgroundMusic} src="/img/background.mp3" preload="none" loop />
 
       {!opened && (
         <div className={`opening-gate${finishingOpening ? " is-finishing" : ""}`}>
-          <video ref={openingVideo} className="opening-video" muted playsInline preload="auto" onTimeUpdate={cueOpeningFade} onEnded={finishOpening}>
+          <video ref={openingVideo} className="opening-video" muted playsInline preload="metadata" onTimeUpdate={cueOpeningFade} onEnded={finishOpening}>
             <source media="(max-width: 767px)" src="/img/portrait-champagne.mp4" type="video/mp4" />
             <source src="/img/landscape-champagne.mp4" type="video/mp4" />
           </video>
@@ -227,7 +227,7 @@ export default function Home({ inviteeName, invitationSlug }: { inviteeName?: st
                   alt={alt}
                   width={1920}
                   height={1080}
-                  loading="eager"
+                  preload={index === 0}
                   sizes="100vw"
                   style={{ animation: activeSlide === index ? "hero-zoom 4s ease-out forwards" : "none", transform: activeSlide === index ? undefined : "scale(1)" }}
                 />

@@ -2,11 +2,17 @@
   "name": "hiruni-and-ravindu",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.6"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test lib/*.test.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",

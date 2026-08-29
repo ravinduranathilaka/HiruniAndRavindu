@@ -5,3 +5,8 @@ export const slugify = (name: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+
+export const createInvitationSlug = (name: string, suffix: string) => {
+  const base = slugify(name).slice(0, 50).replace(/-$/, "");
+  return base ? `${base}-${suffix}` : "";
+};

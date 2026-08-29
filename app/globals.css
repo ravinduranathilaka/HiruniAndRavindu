@@ -1,6 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Josefin+Sans:wght@300;400&family=Playfair+Display:wght@400;500&display=swap');
-
-:root { --bg:#fcfaf5; --ink:#352f27; --muted:#857968; --gold:#98723c; --gold-dark:#6f5126; --champagne:#f4ecd9; --veil:#f1eadf; --white:#fffdfa; --display:"Playfair Display",Georgia,serif; --script:"Cormorant Garamond",Georgia,serif; --sans:"Josefin Sans","Segoe UI",sans-serif; }
+:root { --bg:#fcfaf5; --ink:#352f27; --muted:#857968; --gold:#98723c; --gold-dark:#6f5126; --champagne:#f4ecd9; --veil:#f1eadf; --white:#fffdfa; --display:var(--font-playfair),Georgia,serif; --script:var(--font-cormorant),Georgia,serif; --sans:var(--font-josefin),"Segoe UI",sans-serif; }
 * { box-sizing:border-box; }
 html { scroll-behavior:smooth; }
 body { margin:0; overflow-x:hidden; background:var(--bg); color:var(--ink); font-family:var(--sans); font-weight:300; }
