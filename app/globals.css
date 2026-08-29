@@ -249,8 +249,8 @@ footer small { display:block; margin-top:1.5rem; color:#897d6b; font-size:.62rem
 .admin-section-heading { margin-bottom:1.5rem; display:flex; align-items:end; justify-content:space-between; gap:1.5rem; }
 .admin-section-heading h2 { font-size:clamp(2rem,4vw,3rem); }
 .admin-create { position:relative; flex:none; }
-.admin-create > summary,.admin-row-menu > summary { list-style:none; }
-.admin-create > summary::-webkit-details-marker,.admin-row-menu > summary::-webkit-details-marker { display:none; }
+.admin-create > summary { list-style:none; }
+.admin-create > summary::-webkit-details-marker { display:none; }
 .admin-create[open] > summary { background:var(--admin-brass); }
 .admin-create > form { position:absolute; z-index:30; top:calc(100% + .6rem); right:0; width:min(38rem,calc(100vw - 2.5rem)); padding:1.25rem; border:1px solid var(--admin-line); background:#fffefa; box-shadow:0 1.2rem 3rem #19252324; }
 .admin-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.9rem; }
@@ -269,10 +269,21 @@ footer small { display:block; margin-top:1.5rem; color:#897d6b; font-size:.62rem
 .admin-status.yes { background:#dfece5; color:#28584b; }
 .admin-status.no { background:#f2dfdc; color:#884038; }
 .admin-status.waiting { background:#ebe8e0; color:#746d61; }
-.admin-row-menu { position:relative; min-width:4rem; }
-.admin-row-menu > summary { color:var(--admin-brass); cursor:pointer; font-size:.65rem; text-align:right; }
-.admin-row-menu > form { position:absolute; z-index:15; top:1.5rem; right:0; width:18rem; padding:1rem; display:grid; gap:.7rem; border:1px solid var(--admin-line); background:#fffefa; box-shadow:0 1rem 2.5rem #1925232b; }
-.admin-row-menu.wide > form { width:min(38rem,calc(100vw - 3rem)); }
+.admin-status.changes { background:#f5e7c7; color:#8a5d08; }
+.admin-invitation-link { min-width:7.5rem; }
+.admin-guests-table { min-width:90rem; }
+.admin-invitation-link a { display:block; color:var(--admin-brass); }
+.admin-copy-button,.admin-edit-button { margin-top:.4rem; padding:0!important; background:transparent!important; color:var(--admin-brass)!important; font-size:.58rem!important; text-transform:none!important; letter-spacing:.03em!important; }
+.admin-edit-button { margin:0; }
+.admin-dialog { width:min(48rem,calc(100vw - 2rem)); max-height:88svh; padding:0; overflow:visible; border:0; background:transparent; color:var(--admin-ink); }
+.admin-dialog::backdrop { background:#101817b8; backdrop-filter:blur(3px); }
+.admin-dialog-card { max-height:88svh; padding:1.5rem; overflow:auto; border-top:4px solid var(--admin-brass); background:#fffefa; box-shadow:0 2rem 6rem #0c121180; }
+.admin-dialog-card > header { margin-bottom:1.3rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+.admin-dialog-card > header h2 { margin:0; font-family:var(--display); font-size:2rem; font-weight:400; }
+.admin-dialog-card > header button { width:2rem; height:2rem; padding:0; border:1px solid var(--admin-line); background:transparent; color:var(--admin-ink); font-size:1.25rem; line-height:1; }
+.admin-dialog-section + .admin-dialog-section { margin-top:1.5rem; padding-top:1.5rem; border-top:1px solid var(--admin-line); }
+.admin-dialog-section h3 { margin:0 0 1rem; color:#766952; font-size:.62rem; font-weight:500; letter-spacing:.16em; text-transform:uppercase; }
+.admin-dialog form > button { margin-top:1rem; }
 .admin-form-actions { display:flex; gap:.5rem; margin-top:.3rem; }
 .admin-form-actions .danger { background:transparent; border:1px solid #d5aca6; color:var(--admin-red); }
 .admin-empty { min-height:14rem; padding:2rem; display:flex; flex-direction:column; align-items:center; justify-content:center; border:1px dashed #cfc6b5; color:#807665; text-align:center; }
@@ -323,6 +334,5 @@ footer small { display:block; margin-top:1.5rem; color:#897d6b; font-size:.62rem
   .admin-form-grid { grid-template-columns:1fr; }
   .admin-span-2 { grid-column:auto; }
   .admin-table { min-width:46rem; }
-  .admin-row-menu > form { position:fixed; z-index:50; inset:auto 1rem 1rem; width:auto; max-height:80svh; overflow:auto; }
   .admin-unmatched > article { align-items:flex-start; }
 }

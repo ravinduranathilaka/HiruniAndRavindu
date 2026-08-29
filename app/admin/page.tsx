@@ -19,6 +19,7 @@ import {
 import { LoginForm } from "./login-form";
 import { ExpectedGuestFields } from "./expected-guest-fields";
 import { invitationName } from "@/lib/invitation";
+import { AdminModal, CopyInvitationLink } from "./admin-controls";
 
 export const metadata: Metadata = { title: "Guest ledger — Hiruni & Ravindu" };
 
@@ -41,6 +42,13 @@ const attendanceLabels = {
   MYSELF_AND_OTHER_INVITEES: "With other invitees",
   COMPLICATED: "Complicated",
 } as const;
+
+const rsvpStatus = (response?: Pick<ResponseRecord, "attending" | "whoAttending"> | null) => {
+  if (!response) return { label: "Await", className: "waiting" };
+  if (!response.attending) return { label: "Denied", className: "no" };
+  if (response.whoAttending === "COMPLICATED") return { label: "Requested changes", className: "changes" };
+  return { label: "Confirmed", className: "yes" };
+};
 
 function RsvpFields({
   response,
@@ -164,11 +172,13 @@ export default async function AdminPage({
   const totalInvited = expectedGuests.reduce((sum, guest) => sum + guest.invitedPersons, 0);
   const totalConfirmed = responses.reduce((sum, response) => sum + (response.attending ? response.guestCount : 0), 0);
   const unmatchedResponses = responses.filter((response) => !response.expectedGuestId);
-  const attendingResponses = responses.filter((response) => response.attending).length;
-  const declinedResponses = responses.length - attendingResponses;
-  const confirmedInvitations = expectedGuests.filter((guest) => guest.rsvp?.attending).length;
+  const requestedResponses = responses.filter((response) => response.attending && response.whoAttending === "COMPLICATED").length;
+  const confirmedResponses = responses.filter((response) => response.attending).length - requestedResponses;
+  const declinedResponses = responses.filter((response) => !response.attending).length;
+  const requestedInvitations = expectedGuests.filter((guest) => guest.rsvp?.attending && guest.rsvp.whoAttending === "COMPLICATED").length;
+  const confirmedInvitations = expectedGuests.filter((guest) => guest.rsvp?.attending).length - requestedInvitations;
   const declinedInvitations = expectedGuests.filter((guest) => guest.rsvp && !guest.rsvp.attending).length;
-  const awaitingInvitations = expectedGuests.length - confirmedInvitations - declinedInvitations;
+  const awaitingInvitations = expectedGuests.length - confirmedInvitations - declinedInvitations - requestedInvitations;
 
   return (
     <main className="admin-shell">
@@ -185,7 +195,7 @@ export default async function AdminPage({
       </header>
 
       <nav className="admin-tabs" aria-label="Admin sections">
-        <a className={tab === "manage" ? "active" : ""} href="?tab=manage">Guest management <span>{expectedGuests.length}</span></a>
+        <a className={tab === "manage" ? "active" : ""} href="?tab=manage">Guests <span>{expectedGuests.length}</span></a>
         <a className={tab === "stats" ? "active" : ""} href="?tab=stats">RSVP stats <span>{responses.length}</span></a>
       </nav>
 
@@ -195,9 +205,9 @@ export default async function AdminPage({
       {tab === "manage" && (
         <section className="admin-panel">
           <div className="admin-section-heading">
-            <div><p className="admin-kicker">Invitation list</p><h2>Expected guests</h2></div>
+            <div><p className="admin-kicker">Invitation list</p><h2>Guests</h2></div>
             <details className="admin-create">
-              <summary>Add expected guest</summary>
+              <summary>Add guest</summary>
               <form action={createExpectedGuest}>
                 <ExpectedGuestFields parties={parties} />
                 <button type="submit" disabled={!parties.length}>Add guest</button>
@@ -206,27 +216,31 @@ export default async function AdminPage({
             </details>
           </div>
 
-          {!expectedGuests.length ? <Empty>No expected guests yet. Add the first invitation above.</Empty> : (
+          {!expectedGuests.length ? <Empty>No guests yet. Add the first invitation above.</Empty> : (
             <div className="admin-table-wrap">
-              <table className="admin-table">
-                <thead><tr><th>Name</th><th>Invitation</th><th>Inviting party</th><th>Invited persons</th><th>RSVP</th><th><span className="sr-only">Actions</span></th></tr></thead>
-                <tbody>{expectedGuests.map((guest) => (
-                  <tr key={guest.id}>
-                    <td className="admin-primary-cell">{invitationName(guest)}</td>
-                    <td><a href={process.env.ROOT_DOMAIN ? `https://${guest.slug}.${process.env.ROOT_DOMAIN}` : `/invite/${guest.slug}`} target="_blank" rel="noreferrer">{guest.slug}</a></td>
-                    <td>{guest.party.name}</td>
-                    <td>{guest.invitedPersons}</td>
-                    <td><span className={`admin-status ${guest.rsvp?.attending ? "yes" : guest.rsvp ? "no" : "waiting"}`}>{guest.rsvp?.attending ? `${guest.rsvp.guestCount} confirmed` : guest.rsvp ? "Declined" : "Awaiting"}</span></td>
-                    <td>
-                      <details className="admin-row-menu"><summary>Edit</summary>
-                        <form action={updateExpectedGuest.bind(null, guest.id)}>
-                          <ExpectedGuestFields guest={guest} parties={parties} />
-                          <div className="admin-form-actions"><button type="submit">Save changes</button><button className="danger" formAction={deleteExpectedGuest.bind(null, guest.id)}>Delete</button></div>
-                        </form>
-                      </details>
-                    </td>
-                  </tr>
-                ))}</tbody>
+              <table className="admin-table admin-guests-table">
+                <thead><tr><th>Name</th><th>Invitation</th><th>Party</th><th>Invited</th><th>Status</th><th>RSVP details</th><th>Actual</th><th>Message</th><th>Received</th><th><span className="sr-only">Actions</span></th></tr></thead>
+                <tbody>{expectedGuests.map((guest) => {
+                  const status = rsvpStatus(guest.rsvp);
+                  const inviteUrl = process.env.ROOT_DOMAIN ? `https://${guest.slug}.${process.env.ROOT_DOMAIN}` : `/invite/${guest.slug}`;
+                  return (
+                    <tr key={guest.id}>
+                      <td className="admin-primary-cell">{invitationName(guest)}</td>
+                      <td className="admin-invitation-link"><a href={inviteUrl} target="_blank" rel="noreferrer">Open</a><CopyInvitationLink url={inviteUrl} /></td>
+                      <td>{guest.party.name}</td>
+                      <td>{guest.invitedPersons}</td>
+                      <td><span className={`admin-status ${status.className}`}>{status.label}</span></td>
+                      <td>{guest.rsvp ? <>{guest.rsvp.fullName}<small>{guest.rsvp.phoneNumber}{guest.rsvp.email ? ` · ${guest.rsvp.email}` : ""}<br />{guest.rsvp.whoAttending ? attendanceLabels[guest.rsvp.whoAttending] : "—"}</small></> : "—"}</td>
+                      <td className={guest.rsvp && guest.rsvp.guestCount > guest.invitedPersons ? "admin-over-count" : ""}>{guest.rsvp?.guestCount ?? "—"}</td>
+                      <td className="admin-message">{guest.rsvp?.message || "—"}</td>
+                      <td>{guest.rsvp?.createdAt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) ?? "—"}</td>
+                      <td><AdminModal title={`Edit ${invitationName(guest)}`}>
+                        <section className="admin-dialog-section"><h3>Invitation</h3><form action={updateExpectedGuest.bind(null, guest.id)}><ExpectedGuestFields guest={guest} parties={parties} /><div className="admin-form-actions"><button type="submit">Save invitation</button><button className="danger" formAction={deleteExpectedGuest.bind(null, guest.id)}>Delete guest</button></div></form></section>
+                        <section className="admin-dialog-section"><h3>RSVP</h3>{guest.rsvp ? <form action={updateRsvp.bind(null, guest.rsvp.id)}><RsvpFields response={guest.rsvp} guests={guestOptions} returnTab="manage" /><div className="admin-form-actions"><button type="submit">Save RSVP</button><button className="danger" formAction={deleteRsvp.bind(null, guest.rsvp.id)}>Delete RSVP</button></div></form> : <form action={createRsvp}><RsvpFields guests={guestOptions} returnTab="manage" defaultGuest={guest.id} defaultName={invitationName(guest)} defaultCount={guest.invitedPersons} /><button type="submit">Add RSVP</button></form>}</section>
+                      </AdminModal></td>
+                    </tr>
+                  );
+                })}</tbody>
               </table>
             </div>
           )}
@@ -236,66 +250,29 @@ export default async function AdminPage({
       {tab === "manage" && (
         <section className="admin-panel">
           <div className="admin-section-heading">
-            <div><p className="admin-kicker">Landing page responses</p><h2>RSVP responses</h2></div>
+            <div><p className="admin-kicker">Unmatched submissions</p><h2>Unknown RSVP</h2></div>
             <details className="admin-create"><summary>Add response</summary><form action={createRsvp}><RsvpFields guests={guestOptions} returnTab="manage" /><button type="submit">Add response</button></form></details>
           </div>
 
-          {!responses.length ? <Empty>No RSVP responses have been received yet.</Empty> : (
+          {!unmatchedResponses.length ? <Empty>No unknown RSVP submissions.</Empty> : (
             <div className="admin-table-wrap">
               <table className="admin-table admin-rsvp-table">
-                <thead><tr><th>Guest</th><th>Response</th><th>Invitation</th><th>Guests</th><th>Message</th><th>Received</th><th><span className="sr-only">Actions</span></th></tr></thead>
-                <tbody>{responses.map((response) => (
-                  <tr key={response.id}>
+                <thead><tr><th>Guest</th><th>Status</th><th>Attendance</th><th>Guests</th><th>Message</th><th>Received</th><th><span className="sr-only">Actions</span></th></tr></thead>
+                <tbody>{unmatchedResponses.map((response) => {
+                  const status = rsvpStatus(response);
+                  return <tr key={response.id}>
                     <td className="admin-primary-cell">{response.fullName}<small>{response.phoneNumber}{response.email ? ` · ${response.email}` : ""}</small></td>
-                    <td><span className={`admin-status ${response.attending ? "yes" : "no"}`}>{response.attending ? "Attending" : "Declined"}</span><small>{response.whoAttending ? attendanceLabels[response.whoAttending] : "—"}</small></td>
-                    <td>{response.expectedGuest ? <>{invitationName(response.expectedGuest)}<small>{response.expectedGuest.party.name}</small></> : <span className="admin-status waiting">Unmatched</span>}</td>
+                    <td><span className={`admin-status ${status.className}`}>{status.label}</span></td>
+                    <td>{response.whoAttending ? attendanceLabels[response.whoAttending] : "—"}</td>
                     <td>{response.guestCount}</td>
                     <td className="admin-message">{response.message || "—"}</td>
                     <td>{response.createdAt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</td>
-                    <td><details className="admin-row-menu wide"><summary>Edit</summary><form action={updateRsvp.bind(null, response.id)}><RsvpFields response={response} guests={guestOptions} returnTab="manage" /><div className="admin-form-actions"><button type="submit">Save changes</button><button className="danger" formAction={deleteRsvp.bind(null, response.id)}>Delete</button></div></form></details></td>
-                  </tr>
-                ))}</tbody>
+                    <td><AdminModal title={`Edit RSVP from ${response.fullName}`}><form action={updateRsvp.bind(null, response.id)}><RsvpFields response={response} guests={guestOptions} returnTab="manage" /><div className="admin-form-actions"><button type="submit">Save RSVP</button><button className="danger" formAction={deleteRsvp.bind(null, response.id)}>Delete RSVP</button></div></form></AdminModal></td>
+                  </tr>;
+                })}</tbody>
               </table>
             </div>
           )}
-        </section>
-      )}
-
-      {tab === "manage" && (
-        <section className="admin-panel">
-          <div className="admin-section-heading">
-            <div><p className="admin-kicker">Live reconciliation</p><h2>Confirmed guests</h2></div>
-            <details className="admin-create"><summary>Record confirmation</summary><form action={createRsvp}><RsvpFields guests={guestOptions} returnTab="manage" /><button type="submit">Record confirmation</button></form></details>
-          </div>
-
-          <div className="admin-party-totals">
-            {parties.map((party) => {
-              const invited = party.expectedGuests.reduce((sum, guest) => sum + guest.invitedPersons, 0);
-              const confirmed = party.expectedGuests.reduce((sum, guest) => sum + (guest.rsvp?.attending ? guest.rsvp.guestCount : 0), 0);
-              return <article key={party.id} className={confirmed > party.maxGuestCount ? "over" : ""}><p>{party.name}</p><strong>{confirmed}</strong><span>confirmed · {invited} invited · max {party.maxGuestCount}</span>{confirmed > party.maxGuestCount && <em>{confirmed - party.maxGuestCount} over limit</em>}</article>;
-            })}
-            {!parties.length && <Empty>No inviting parties have been created.</Empty>}
-          </div>
-
-          <div className="admin-table-wrap">
-            <table className="admin-table">
-              <thead><tr><th>Expected guest</th><th>Party</th><th>Invited</th><th>Response</th><th>Actual guests</th><th><span className="sr-only">Actions</span></th></tr></thead>
-              <tbody>{expectedGuests.map((guest) => (
-                <tr key={guest.id}>
-                  <td className="admin-primary-cell">{invitationName(guest)}</td><td>{guest.party.name}</td><td>{guest.invitedPersons}</td>
-                  <td>{guest.rsvp ? <><span className={`admin-status ${guest.rsvp.attending ? "yes" : "no"}`}>{guest.rsvp.attending ? "Confirmed" : "Declined"}</span><small>{guest.rsvp.fullName}</small></> : <span className="admin-status waiting">Awaiting</span>}</td>
-                  <td className={guest.rsvp && guest.rsvp.guestCount > guest.invitedPersons ? "admin-over-count" : ""}>{guest.rsvp?.guestCount ?? "—"}</td>
-                  <td>{guest.rsvp ? (
-                    <details className="admin-row-menu wide"><summary>Edit</summary><form action={updateRsvp.bind(null, guest.rsvp.id)}><RsvpFields response={guest.rsvp} guests={guestOptions} returnTab="manage" /><div className="admin-form-actions"><button type="submit">Save changes</button><button className="danger" formAction={deleteRsvp.bind(null, guest.rsvp.id)}>Delete</button></div></form></details>
-                  ) : (
-                    <details className="admin-row-menu wide"><summary>Confirm</summary><form action={createRsvp}><RsvpFields guests={guestOptions} returnTab="manage" defaultGuest={guest.id} defaultName={invitationName(guest)} defaultCount={guest.invitedPersons} /><button type="submit">Record confirmation</button></form></details>
-                  )}</td>
-                </tr>
-              ))}</tbody>
-            </table>
-          </div>
-
-          {unmatchedResponses.length > 0 && <div className="admin-unmatched"><h3>Unmatched responses</h3><p>Match these responses to an invitation to include them in a party total.</p>{unmatchedResponses.map((response) => <article key={response.id}><div><strong>{response.fullName}</strong><span>{response.attending ? `${response.guestCount} attending` : "Declined"} · {response.phoneNumber}</span></div><details className="admin-row-menu wide"><summary>Reconcile</summary><form action={updateRsvp.bind(null, response.id)}><RsvpFields response={response} guests={guestOptions} returnTab="manage" /><div className="admin-form-actions"><button type="submit">Save match</button><button className="danger" formAction={deleteRsvp.bind(null, response.id)}>Delete</button></div></form></details></article>)}</div>}
         </section>
       )}
 
@@ -305,7 +282,7 @@ export default async function AdminPage({
             <div><p className="admin-kicker">Super admin</p><h2>Inviting party management</h2></div>
             <details className="admin-create"><summary>Add inviting party</summary><form action={createParty}><div className="admin-form-grid"><label>Party name<input name="name" required maxLength={120} /></label><label>Maximum guests<input name="maxGuestCount" type="number" min="0" max="9999" required /></label></div><button type="submit">Add party</button></form></details>
           </div>
-          {!parties.length ? <Empty>No inviting parties yet. Add the first one above.</Empty> : <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Inviting party</th><th>Expected entries</th><th>Invited persons</th><th>Maximum guests</th><th><span className="sr-only">Actions</span></th></tr></thead><tbody>{parties.map((party) => <tr key={party.id}><td className="admin-primary-cell">{party.name}</td><td>{party.expectedGuests.length}</td><td>{party.expectedGuests.reduce((sum, guest) => sum + guest.invitedPersons, 0)}</td><td>{party.maxGuestCount}</td><td><details className="admin-row-menu"><summary>Edit</summary><form action={updateParty.bind(null, party.id)}><label>Name<input name="name" defaultValue={party.name} required /></label><label>Maximum guests<input name="maxGuestCount" type="number" min="0" defaultValue={party.maxGuestCount} required /></label><div className="admin-form-actions"><button type="submit">Save changes</button><button className="danger" formAction={deleteParty.bind(null, party.id)}>Delete party</button></div><p className="admin-form-hint">Deleting a party also removes its expected guest entries. Matched RSVP responses remain unmatched.</p></form></details></td></tr>)}</tbody></table></div>}
+          {!parties.length ? <Empty>No inviting parties yet. Add the first one above.</Empty> : <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Inviting party</th><th>Guest entries</th><th>Invited persons</th><th>Maximum guests</th><th><span className="sr-only">Actions</span></th></tr></thead><tbody>{parties.map((party) => <tr key={party.id}><td className="admin-primary-cell">{party.name}</td><td>{party.expectedGuests.length}</td><td>{party.expectedGuests.reduce((sum, guest) => sum + guest.invitedPersons, 0)}</td><td>{party.maxGuestCount}</td><td><AdminModal title={`Edit ${party.name}`}><form action={updateParty.bind(null, party.id)}><div className="admin-form-grid"><label>Name<input name="name" defaultValue={party.name} required /></label><label>Maximum guests<input name="maxGuestCount" type="number" min="0" defaultValue={party.maxGuestCount} required /></label></div><div className="admin-form-actions"><button type="submit">Save party</button><button className="danger" formAction={deleteParty.bind(null, party.id)}>Delete party</button></div><p className="admin-form-hint">Deleting a party also removes its guest entries. Matched RSVP responses remain unmatched.</p></form></AdminModal></td></tr>)}</tbody></table></div>}
         </section>
       )}
 
@@ -321,17 +298,19 @@ export default async function AdminPage({
               title="Invitation status"
               center={String(expectedGuests.length)}
               values={[
-                { label: "Attending", value: confirmedInvitations, color: "#315f53" },
-                { label: "Declined", value: declinedInvitations, color: "#9c493f" },
-                { label: "Awaiting", value: awaitingInvitations, color: "#d8cdb8" },
+                { label: "Await", value: awaitingInvitations, color: "#a9a59d" },
+                { label: "Confirmed", value: confirmedInvitations, color: "#315f53" },
+                { label: "Denied", value: declinedInvitations, color: "#9c493f" },
+                { label: "Requested changes", value: requestedInvitations, color: "#c6922d" },
               ]}
             />
             <PieChart
               title="Submitted responses"
               center={String(responses.length)}
               values={[
-                { label: "Attending", value: attendingResponses, color: "#315f53" },
-                { label: "Declined", value: declinedResponses, color: "#9c493f" },
+                { label: "Confirmed", value: confirmedResponses, color: "#315f53" },
+                { label: "Denied", value: declinedResponses, color: "#9c493f" },
+                { label: "Requested changes", value: requestedResponses, color: "#c6922d" },
               ]}
             />
             <PieChart
