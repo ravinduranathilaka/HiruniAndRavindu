@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { slugify } from "@/lib/slug";
+import { INVITATION_ADDITIONS, invitationGuestCount, NAME_PREFIXES } from "@/lib/invitation";
 import { createAdminSession, deleteAdminSession, requireAdmin, roleForPassword } from "./auth";
 
 export type LoginState = { error?: string };
@@ -14,7 +16,13 @@ const count = z.coerce.number().int().min(0).max(9999);
 const normalizePhoneNumber = (value: string) =>
   value.startsWith("+") ? value.replace(/[\s()-]/g, "") : `+94${value.replace(/\D/g, "").replace(/^(?:0094|94|0)/, "")}`;
 
-const expectedGuestSchema = z.object({ name: text, partyId: id, invitedPersons: count.min(1) });
+const expectedGuestSchema = z.object({
+  namePrefix: z.enum(NAME_PREFIXES).nullable(),
+  name: text,
+  addition: z.enum(INVITATION_ADDITIONS).nullable(),
+  partyId: id,
+  invitedPersons: count.min(1).max(10),
+}).transform((data) => ({ ...data, invitedPersons: invitationGuestCount(data.addition, data.invitedPersons) }));
 const partySchema = z.object({ name: text, maxGuestCount: count });
 const rsvpSchema = z.object({
   fullName: text,
@@ -28,7 +36,7 @@ const rsvpSchema = z.object({
 });
 
 const destination = (tab: string, notice?: string, error?: string): never => {
-  const params = new URLSearchParams({ tab });
+  const params = new URLSearchParams({ tab: tab === "stats" ? "stats" : "manage" });
   if (notice) params.set("notice", notice);
   if (error) params.set("error", error);
   redirect(`/admin?${params}`);
@@ -36,7 +44,7 @@ const destination = (tab: string, notice?: string, error?: string): never => {
 
 const databaseError = (error: unknown) => {
   if (typeof error === "object" && error && "code" in error && error.code === "P2002") {
-    return "That phone number, party name, or invitation match is already in use.";
+    return "That phone number, party name, guest name, or invitation match is already in use.";
   }
   return "The change could not be saved.";
 };
@@ -55,10 +63,16 @@ export async function logout() {
 
 export async function createExpectedGuest(formData: FormData) {
   await requireAdmin();
-  const result = expectedGuestSchema.safeParse(Object.fromEntries(formData));
-  if (!result.success) destination("expected", undefined, "Enter a name, party, and invited guest count.");
+  const result = expectedGuestSchema.safeParse({
+    ...Object.fromEntries(formData),
+    namePrefix: formData.get("namePrefix") || null,
+    addition: formData.get("addition") || null,
+  });
+  if (!result.success) destination("expected", undefined, "Check the invitation name, addition, and guest count.");
+  const slug = slugify(result.data!.name);
+  if (!slug) destination("expected", undefined, "The name must contain letters or numbers for its invitation link.");
   try {
-    await prisma.expectedGuest.create({ data: result.data! });
+    await prisma.expectedGuest.create({ data: { ...result.data!, slug } });
   } catch (error) {
     destination("expected", undefined, databaseError(error));
   }
@@ -68,10 +82,16 @@ export async function createExpectedGuest(formData: FormData) {
 
 export async function updateExpectedGuest(guestId: string, formData: FormData) {
   await requireAdmin();
-  const result = expectedGuestSchema.safeParse(Object.fromEntries(formData));
-  if (!result.success) destination("expected", undefined, "Enter a name, party, and invited guest count.");
+  const result = expectedGuestSchema.safeParse({
+    ...Object.fromEntries(formData),
+    namePrefix: formData.get("namePrefix") || null,
+    addition: formData.get("addition") || null,
+  });
+  if (!result.success) destination("expected", undefined, "Check the invitation name, addition, and guest count.");
+  const slug = slugify(result.data!.name);
+  if (!slug) destination("expected", undefined, "The name must contain letters or numbers for its invitation link.");
   try {
-    await prisma.expectedGuest.update({ where: { id: guestId }, data: result.data! });
+    await prisma.expectedGuest.update({ where: { id: guestId }, data: { ...result.data!, slug } });
   } catch (error) {
     destination("expected", undefined, databaseError(error));
   }

@@ -33,7 +33,10 @@ model InvitingParty {
 
 model ExpectedGuest {
   id             String        @id @default(cuid())
+  namePrefix     String?
   name           String
+  addition       String?
+  slug           String        @unique
   invitedPersons Int           @default(1)
   partyId        String
   party          InvitingParty @relation(fields: [partyId], references: [id], onDelete: Cascade)

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { slugify } from "@/lib/slug";
 import { Icon, type IconName } from "./icons";
 import { RsvpForm } from "./rsvp-form";
 
@@ -25,7 +26,8 @@ const mapSrc = "https://www.google.com/maps?q=7.3027672,80.6367887&output=embed"
 const mapUrl = "https://maps.app.goo.gl/ZJ6S4TzJ5DrnDfjH8";
 const calendarUrl = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Hiruni+%26+Ravindu+Wedding&dates=20261214T093000%2F20261214T153000&ctz=Asia%2FColombo&details=Wedding+celebration&location=The+Grand+Kandyan+Hotel%2C+Kandy%2C+Sri+Lanka";
 
-export default function Home() {
+export default function Home({ inviteeName, invitationSlug }: { inviteeName?: string; invitationSlug?: string }) {
+  const hasValidInvitation = Boolean(invitationSlug && slugify(invitationSlug) === invitationSlug);
   const [opening, setOpening] = useState(false);
   const [finishingOpening, setFinishingOpening] = useState(false);
   const [opened, setOpened] = useState(false);
@@ -163,7 +165,7 @@ export default function Home() {
 
       {opened && (
         <>
-          {!invitationOpen && (
+          {hasValidInvitation && !invitationOpen && (
             <>
               {showInvitationCue && (
                 <Image className="invitation-cue" src="/img/chalk_arrow.png" alt="" width={464} height={987} />
@@ -179,7 +181,7 @@ export default function Home() {
         </>
       )}
 
-      {opened && invitationOpen && (
+      {hasValidInvitation && opened && invitationOpen && (
         <div className="invitation-backdrop" onClick={(event) => event.target === event.currentTarget && setInvitationOpen(false)}>
           <article className="invitation-card" role="dialog" aria-modal="true" aria-labelledby="invitation-title" aria-describedby="invitation-description">
             <button ref={invitationCloseButton} className="invitation-close" type="button" onClick={() => setInvitationOpen(false)} aria-label="Close wedding invitation"><Icon name="close" /></button>
@@ -194,7 +196,7 @@ export default function Home() {
               <p className="invitation-kicker">Together with their families</p>
               <h2 id="invitation-title"><span>Hiruni</span><i>&amp;</i><span>Ravindu</span></h2>
               <p id="invitation-description" className="invitation-request">request the pleasure of the company of</p>
-              <p className="invitee-name">Name Name</p>
+              <p className="invitee-name">{inviteeName ?? "Our Family & Friends"}</p>
               <p className="invitation-request">to celebrate their marriage</p>
 
               <div className="invitation-date" aria-label="Monday, December 14, 2026">
@@ -300,7 +302,7 @@ export default function Home() {
           <p className="section-label">Be Our Guest</p>
           <h2 className="section-title">RSVP</h2>
           <p className="rsvp-deadline">Kindly respond by October 20, 2026</p>
-          <RsvpForm />
+          <RsvpForm defaultName={inviteeName} invitationSlug={invitationSlug} />
           <p className="rsvp-contact-note">For any changes, please contact the couple directly using the phone numbers below.</p>
         </div>
       </section>

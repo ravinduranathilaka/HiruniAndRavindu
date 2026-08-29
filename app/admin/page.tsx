@@ -17,10 +17,12 @@ import {
   updateRsvp,
 } from "./actions";
 import { LoginForm } from "./login-form";
+import { ExpectedGuestFields } from "./expected-guest-fields";
+import { invitationName } from "@/lib/invitation";
 
 export const metadata: Metadata = { title: "Guest ledger — Hiruni & Ravindu" };
 
-type Tab = "expected" | "rsvp" | "confirmed" | "parties";
+type Tab = "manage" | "stats";
 type GuestOption = { id: string; name: string; party: { name: string } };
 type ResponseRecord = {
   id: string;
@@ -88,6 +90,33 @@ function Empty({ children }: { children: ReactNode }) {
   return <div className="admin-empty"><Icon name="sparkles" /><p>{children}</p></div>;
 }
 
+function PieChart({
+  title,
+  values,
+  center,
+}: {
+  title: string;
+  values: { label: string; value: number; color: string }[];
+  center: string;
+}) {
+  const total = values.reduce((sum, item) => sum + item.value, 0);
+  let cursor = 0;
+  const stops = values.map((item) => {
+    const start = cursor;
+    cursor += total ? item.value / total * 100 : 0;
+    return `${item.color} ${start}% ${cursor}%`;
+  });
+
+  return (
+    <article className="admin-chart-card">
+      <div className="admin-pie" style={{ background: total ? `conic-gradient(${stops.join(",")})` : "#ded9ce" }} role="img" aria-label={`${title}: ${values.map((item) => `${item.label} ${item.value}`).join(", ")}`}>
+        <span><strong>{center}</strong><small>Total</small></span>
+      </div>
+      <div><h2>{title}</h2><ul>{values.map((item) => <li key={item.label}><i style={{ background: item.color }} /><span>{item.label}</span><strong>{item.value}</strong></li>)}</ul></div>
+    </article>
+  );
+}
+
 export default async function AdminPage({
   searchParams,
 }: {
@@ -112,8 +141,7 @@ export default async function AdminPage({
 
   const query = await searchParams;
   const requestedTab = Array.isArray(query.tab) ? query.tab[0] : query.tab;
-  const allowedTabs: Tab[] = role === "super" ? ["expected", "rsvp", "confirmed", "parties"] : ["expected", "rsvp", "confirmed"];
-  const tab: Tab = allowedTabs.includes(requestedTab as Tab) ? requestedTab as Tab : "expected";
+  const tab: Tab = requestedTab === "stats" ? "stats" : "manage";
   const notice = Array.isArray(query.notice) ? query.notice[0] : query.notice;
   const error = Array.isArray(query.error) ? query.error[0] : query.error;
 
@@ -132,10 +160,15 @@ export default async function AdminPage({
     }),
   ]);
 
-  const guestOptions: GuestOption[] = expectedGuests.map(({ id, name, party }) => ({ id, name, party }));
+  const guestOptions: GuestOption[] = expectedGuests.map((guest) => ({ id: guest.id, name: invitationName(guest), party: guest.party }));
   const totalInvited = expectedGuests.reduce((sum, guest) => sum + guest.invitedPersons, 0);
   const totalConfirmed = responses.reduce((sum, response) => sum + (response.attending ? response.guestCount : 0), 0);
   const unmatchedResponses = responses.filter((response) => !response.expectedGuestId);
+  const attendingResponses = responses.filter((response) => response.attending).length;
+  const declinedResponses = responses.length - attendingResponses;
+  const confirmedInvitations = expectedGuests.filter((guest) => guest.rsvp?.attending).length;
+  const declinedInvitations = expectedGuests.filter((guest) => guest.rsvp && !guest.rsvp.attending).length;
+  const awaitingInvitations = expectedGuests.length - confirmedInvitations - declinedInvitations;
 
   return (
     <main className="admin-shell">
@@ -152,27 +185,21 @@ export default async function AdminPage({
       </header>
 
       <nav className="admin-tabs" aria-label="Admin sections">
-        <a className={tab === "expected" ? "active" : ""} href="?tab=expected">Expected guests <span>{expectedGuests.length}</span></a>
-        <a className={tab === "rsvp" ? "active" : ""} href="?tab=rsvp">RSVP <span>{responses.length}</span></a>
-        <a className={tab === "confirmed" ? "active" : ""} href="?tab=confirmed">Confirmed guests <span>{totalConfirmed}</span></a>
-        {role === "super" && <a className={tab === "parties" ? "active" : ""} href="?tab=parties">Inviting parties <span>{parties.length}</span></a>}
+        <a className={tab === "manage" ? "active" : ""} href="?tab=manage">Guest management <span>{expectedGuests.length}</span></a>
+        <a className={tab === "stats" ? "active" : ""} href="?tab=stats">RSVP stats <span>{responses.length}</span></a>
       </nav>
 
       {notice && <p className="admin-alert success" role="status">{notice}</p>}
       {error && <p className="admin-alert error" role="alert">{error}</p>}
 
-      {tab === "expected" && (
+      {tab === "manage" && (
         <section className="admin-panel">
           <div className="admin-section-heading">
             <div><p className="admin-kicker">Invitation list</p><h2>Expected guests</h2></div>
             <details className="admin-create">
               <summary>Add expected guest</summary>
               <form action={createExpectedGuest}>
-                <div className="admin-form-grid">
-                  <label>Guest or family name<input name="name" required maxLength={120} /></label>
-                  <label>Inviting party<select name="partyId" required defaultValue=""><option value="" disabled>Select a party</option>{parties.map((party) => <option key={party.id} value={party.id}>{party.name}</option>)}</select></label>
-                  <label>Invited persons<input name="invitedPersons" type="number" min="1" max="9999" defaultValue="1" required /></label>
-                </div>
+                <ExpectedGuestFields parties={parties} />
                 <button type="submit" disabled={!parties.length}>Add guest</button>
                 {!parties.length && <p className="admin-form-hint">A super admin must add an inviting party first.</p>}
               </form>
@@ -182,19 +209,18 @@ export default async function AdminPage({
           {!expectedGuests.length ? <Empty>No expected guests yet. Add the first invitation above.</Empty> : (
             <div className="admin-table-wrap">
               <table className="admin-table">
-                <thead><tr><th>Name</th><th>Inviting party</th><th>Invited persons</th><th>RSVP</th><th><span className="sr-only">Actions</span></th></tr></thead>
+                <thead><tr><th>Name</th><th>Invitation</th><th>Inviting party</th><th>Invited persons</th><th>RSVP</th><th><span className="sr-only">Actions</span></th></tr></thead>
                 <tbody>{expectedGuests.map((guest) => (
                   <tr key={guest.id}>
-                    <td className="admin-primary-cell">{guest.name}</td>
+                    <td className="admin-primary-cell">{invitationName(guest)}</td>
+                    <td><a href={process.env.ROOT_DOMAIN ? `https://${guest.slug}.${process.env.ROOT_DOMAIN}` : `/invite/${guest.slug}`} target="_blank" rel="noreferrer">{guest.slug}</a></td>
                     <td>{guest.party.name}</td>
                     <td>{guest.invitedPersons}</td>
                     <td><span className={`admin-status ${guest.rsvp?.attending ? "yes" : guest.rsvp ? "no" : "waiting"}`}>{guest.rsvp?.attending ? `${guest.rsvp.guestCount} confirmed` : guest.rsvp ? "Declined" : "Awaiting"}</span></td>
                     <td>
                       <details className="admin-row-menu"><summary>Edit</summary>
                         <form action={updateExpectedGuest.bind(null, guest.id)}>
-                          <label>Name<input name="name" defaultValue={guest.name} required /></label>
-                          <label>Party<select name="partyId" defaultValue={guest.partyId}>{parties.map((party) => <option key={party.id} value={party.id}>{party.name}</option>)}</select></label>
-                          <label>Invited persons<input name="invitedPersons" type="number" min="1" defaultValue={guest.invitedPersons} required /></label>
+                          <ExpectedGuestFields guest={guest} parties={parties} />
                           <div className="admin-form-actions"><button type="submit">Save changes</button><button className="danger" formAction={deleteExpectedGuest.bind(null, guest.id)}>Delete</button></div>
                         </form>
                       </details>
@@ -207,11 +233,11 @@ export default async function AdminPage({
         </section>
       )}
 
-      {tab === "rsvp" && (
+      {tab === "manage" && (
         <section className="admin-panel">
           <div className="admin-section-heading">
             <div><p className="admin-kicker">Landing page responses</p><h2>RSVP responses</h2></div>
-            <details className="admin-create"><summary>Add response</summary><form action={createRsvp}><RsvpFields guests={guestOptions} returnTab="rsvp" /><button type="submit">Add response</button></form></details>
+            <details className="admin-create"><summary>Add response</summary><form action={createRsvp}><RsvpFields guests={guestOptions} returnTab="manage" /><button type="submit">Add response</button></form></details>
           </div>
 
           {!responses.length ? <Empty>No RSVP responses have been received yet.</Empty> : (
@@ -222,11 +248,11 @@ export default async function AdminPage({
                   <tr key={response.id}>
                     <td className="admin-primary-cell">{response.fullName}<small>{response.phoneNumber}{response.email ? ` · ${response.email}` : ""}</small></td>
                     <td><span className={`admin-status ${response.attending ? "yes" : "no"}`}>{response.attending ? "Attending" : "Declined"}</span><small>{response.whoAttending ? attendanceLabels[response.whoAttending] : "—"}</small></td>
-                    <td>{response.expectedGuest ? <>{response.expectedGuest.name}<small>{response.expectedGuest.party.name}</small></> : <span className="admin-status waiting">Unmatched</span>}</td>
+                    <td>{response.expectedGuest ? <>{invitationName(response.expectedGuest)}<small>{response.expectedGuest.party.name}</small></> : <span className="admin-status waiting">Unmatched</span>}</td>
                     <td>{response.guestCount}</td>
                     <td className="admin-message">{response.message || "—"}</td>
                     <td>{response.createdAt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</td>
-                    <td><details className="admin-row-menu wide"><summary>Edit</summary><form action={updateRsvp.bind(null, response.id)}><RsvpFields response={response} guests={guestOptions} returnTab="rsvp" /><div className="admin-form-actions"><button type="submit">Save changes</button><button className="danger" formAction={deleteRsvp.bind(null, response.id)}>Delete</button></div></form></details></td>
+                    <td><details className="admin-row-menu wide"><summary>Edit</summary><form action={updateRsvp.bind(null, response.id)}><RsvpFields response={response} guests={guestOptions} returnTab="manage" /><div className="admin-form-actions"><button type="submit">Save changes</button><button className="danger" formAction={deleteRsvp.bind(null, response.id)}>Delete</button></div></form></details></td>
                   </tr>
                 ))}</tbody>
               </table>
@@ -235,11 +261,11 @@ export default async function AdminPage({
         </section>
       )}
 
-      {tab === "confirmed" && (
+      {tab === "manage" && (
         <section className="admin-panel">
           <div className="admin-section-heading">
             <div><p className="admin-kicker">Live reconciliation</p><h2>Confirmed guests</h2></div>
-            <details className="admin-create"><summary>Record confirmation</summary><form action={createRsvp}><RsvpFields guests={guestOptions} returnTab="confirmed" /><button type="submit">Record confirmation</button></form></details>
+            <details className="admin-create"><summary>Record confirmation</summary><form action={createRsvp}><RsvpFields guests={guestOptions} returnTab="manage" /><button type="submit">Record confirmation</button></form></details>
           </div>
 
           <div className="admin-party-totals">
@@ -256,30 +282,68 @@ export default async function AdminPage({
               <thead><tr><th>Expected guest</th><th>Party</th><th>Invited</th><th>Response</th><th>Actual guests</th><th><span className="sr-only">Actions</span></th></tr></thead>
               <tbody>{expectedGuests.map((guest) => (
                 <tr key={guest.id}>
-                  <td className="admin-primary-cell">{guest.name}</td><td>{guest.party.name}</td><td>{guest.invitedPersons}</td>
+                  <td className="admin-primary-cell">{invitationName(guest)}</td><td>{guest.party.name}</td><td>{guest.invitedPersons}</td>
                   <td>{guest.rsvp ? <><span className={`admin-status ${guest.rsvp.attending ? "yes" : "no"}`}>{guest.rsvp.attending ? "Confirmed" : "Declined"}</span><small>{guest.rsvp.fullName}</small></> : <span className="admin-status waiting">Awaiting</span>}</td>
                   <td className={guest.rsvp && guest.rsvp.guestCount > guest.invitedPersons ? "admin-over-count" : ""}>{guest.rsvp?.guestCount ?? "—"}</td>
                   <td>{guest.rsvp ? (
-                    <details className="admin-row-menu wide"><summary>Edit</summary><form action={updateRsvp.bind(null, guest.rsvp.id)}><RsvpFields response={guest.rsvp} guests={guestOptions} returnTab="confirmed" /><div className="admin-form-actions"><button type="submit">Save changes</button><button className="danger" formAction={deleteRsvp.bind(null, guest.rsvp.id)}>Delete</button></div></form></details>
+                    <details className="admin-row-menu wide"><summary>Edit</summary><form action={updateRsvp.bind(null, guest.rsvp.id)}><RsvpFields response={guest.rsvp} guests={guestOptions} returnTab="manage" /><div className="admin-form-actions"><button type="submit">Save changes</button><button className="danger" formAction={deleteRsvp.bind(null, guest.rsvp.id)}>Delete</button></div></form></details>
                   ) : (
-                    <details className="admin-row-menu wide"><summary>Confirm</summary><form action={createRsvp}><RsvpFields guests={guestOptions} returnTab="confirmed" defaultGuest={guest.id} defaultName={guest.name} defaultCount={guest.invitedPersons} /><button type="submit">Record confirmation</button></form></details>
+                    <details className="admin-row-menu wide"><summary>Confirm</summary><form action={createRsvp}><RsvpFields guests={guestOptions} returnTab="manage" defaultGuest={guest.id} defaultName={invitationName(guest)} defaultCount={guest.invitedPersons} /><button type="submit">Record confirmation</button></form></details>
                   )}</td>
                 </tr>
               ))}</tbody>
             </table>
           </div>
 
-          {unmatchedResponses.length > 0 && <div className="admin-unmatched"><h3>Unmatched responses</h3><p>Match these responses to an invitation to include them in a party total.</p>{unmatchedResponses.map((response) => <article key={response.id}><div><strong>{response.fullName}</strong><span>{response.attending ? `${response.guestCount} attending` : "Declined"} · {response.phoneNumber}</span></div><details className="admin-row-menu wide"><summary>Reconcile</summary><form action={updateRsvp.bind(null, response.id)}><RsvpFields response={response} guests={guestOptions} returnTab="confirmed" /><div className="admin-form-actions"><button type="submit">Save match</button><button className="danger" formAction={deleteRsvp.bind(null, response.id)}>Delete</button></div></form></details></article>)}</div>}
+          {unmatchedResponses.length > 0 && <div className="admin-unmatched"><h3>Unmatched responses</h3><p>Match these responses to an invitation to include them in a party total.</p>{unmatchedResponses.map((response) => <article key={response.id}><div><strong>{response.fullName}</strong><span>{response.attending ? `${response.guestCount} attending` : "Declined"} · {response.phoneNumber}</span></div><details className="admin-row-menu wide"><summary>Reconcile</summary><form action={updateRsvp.bind(null, response.id)}><RsvpFields response={response} guests={guestOptions} returnTab="manage" /><div className="admin-form-actions"><button type="submit">Save match</button><button className="danger" formAction={deleteRsvp.bind(null, response.id)}>Delete</button></div></form></details></article>)}</div>}
         </section>
       )}
 
-      {tab === "parties" && role === "super" && (
+      {tab === "manage" && role === "super" && (
         <section className="admin-panel">
           <div className="admin-section-heading">
             <div><p className="admin-kicker">Super admin</p><h2>Inviting party management</h2></div>
             <details className="admin-create"><summary>Add inviting party</summary><form action={createParty}><div className="admin-form-grid"><label>Party name<input name="name" required maxLength={120} /></label><label>Maximum guests<input name="maxGuestCount" type="number" min="0" max="9999" required /></label></div><button type="submit">Add party</button></form></details>
           </div>
           {!parties.length ? <Empty>No inviting parties yet. Add the first one above.</Empty> : <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Inviting party</th><th>Expected entries</th><th>Invited persons</th><th>Maximum guests</th><th><span className="sr-only">Actions</span></th></tr></thead><tbody>{parties.map((party) => <tr key={party.id}><td className="admin-primary-cell">{party.name}</td><td>{party.expectedGuests.length}</td><td>{party.expectedGuests.reduce((sum, guest) => sum + guest.invitedPersons, 0)}</td><td>{party.maxGuestCount}</td><td><details className="admin-row-menu"><summary>Edit</summary><form action={updateParty.bind(null, party.id)}><label>Name<input name="name" defaultValue={party.name} required /></label><label>Maximum guests<input name="maxGuestCount" type="number" min="0" defaultValue={party.maxGuestCount} required /></label><div className="admin-form-actions"><button type="submit">Save changes</button><button className="danger" formAction={deleteParty.bind(null, party.id)}>Delete party</button></div><p className="admin-form-hint">Deleting a party also removes its expected guest entries. Matched RSVP responses remain unmatched.</p></form></details></td></tr>)}</tbody></table></div>}
+        </section>
+      )}
+
+      {tab === "stats" && (
+        <section className="admin-stats">
+          <div className="admin-stats-heading">
+            <p className="admin-kicker">At a glance</p>
+            <h2>RSVP statistics</h2>
+            <p>Live totals from invitation records and submitted responses.</p>
+          </div>
+          <div className="admin-chart-grid">
+            <PieChart
+              title="Invitation status"
+              center={String(expectedGuests.length)}
+              values={[
+                { label: "Attending", value: confirmedInvitations, color: "#315f53" },
+                { label: "Declined", value: declinedInvitations, color: "#9c493f" },
+                { label: "Awaiting", value: awaitingInvitations, color: "#d8cdb8" },
+              ]}
+            />
+            <PieChart
+              title="Submitted responses"
+              center={String(responses.length)}
+              values={[
+                { label: "Attending", value: attendingResponses, color: "#315f53" },
+                { label: "Declined", value: declinedResponses, color: "#9c493f" },
+              ]}
+            />
+            <PieChart
+              title="Guest headcount"
+              center={`${totalConfirmed}/${totalInvited}`}
+              values={[
+                { label: "Confirmed", value: Math.min(totalConfirmed, totalInvited), color: "#9a7440" },
+                { label: "Places remaining", value: Math.max(0, totalInvited - totalConfirmed), color: "#d8cdb8" },
+                { label: "Over invited total", value: Math.max(0, totalConfirmed - totalInvited), color: "#9c493f" },
+              ]}
+            />
+          </div>
         </section>
       )}
     </main>

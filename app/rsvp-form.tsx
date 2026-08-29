@@ -6,7 +6,7 @@ import { Icon } from "./icons";
 
 const initialState: RsvpState = { status: "idle" };
 
-export function RsvpForm() {
+export function RsvpForm({ defaultName, invitationSlug }: { defaultName?: string; invitationSlug?: string }) {
   const [state, formAction, pending] = useActionState(submitRsvp, initialState);
   const [attending, setAttending] = useState<"yes" | "no" | null>(null);
   const error = (field: string) => state.errors?.[field]?.[0];
@@ -17,10 +17,11 @@ export function RsvpForm() {
 
   return (
     <form action={formAction} aria-label="Wedding RSVP">
+      {invitationSlug && <input type="hidden" name="invitationSlug" value={invitationSlug} />}
       <span className="form-note">Your Response</span>
 
       <label htmlFor="fullName">Full Name *</label>
-      <input id="fullName" name="fullName" type="text" autoComplete="name" maxLength={120} required aria-invalid={Boolean(error("fullName"))} />
+      <input id="fullName" name="fullName" type="text" autoComplete="name" maxLength={120} defaultValue={defaultName} required aria-invalid={Boolean(error("fullName"))} />
       {error("fullName") && <p className="field-error">{error("fullName")}</p>}
 
       <label htmlFor="phoneNumber">Phone Number *</label>

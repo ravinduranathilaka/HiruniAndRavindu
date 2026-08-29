@@ -17,6 +17,7 @@ const rsvpSchema = z.object({
   attending: z.enum(["yes", "no"], { error: "Choose whether you will attend" }),
   whoAttending: z.enum(["ONLY_MYSELF", "MYSELF_AND_OTHER_INVITEES", "COMPLICATED"]).optional(),
   message: z.string().trim().max(1000, "Keep your message under 1,000 characters"),
+  invitationSlug: z.string().trim().optional(),
 }).superRefine((data, context) => {
   if (data.attending === "yes" && !data.whoAttending) {
     context.addIssue({
@@ -44,6 +45,7 @@ export async function submitRsvp(
     attending: formData.get("attending"),
     whoAttending: formData.get("whoAttending") ?? undefined,
     message: formData.get("message") ?? "",
+    invitationSlug: formData.get("invitationSlug") ?? undefined,
   });
 
   if (!result.success) {
@@ -54,9 +56,13 @@ export async function submitRsvp(
     };
   }
 
-  const { attending, whoAttending, email, message, ...data } = result.data;
+  const { attending, whoAttending, email, message, invitationSlug, ...data } = result.data;
 
   try {
+    const expectedGuest = invitationSlug
+      ? await prisma.expectedGuest.findUnique({ where: { slug: invitationSlug }, select: { id: true } })
+      : null;
+
     await prisma.rsvp.create({
       data: {
         ...data,
@@ -65,6 +71,7 @@ export async function submitRsvp(
         guestCount: attending === "yes" ? 1 : 0,
         email: email || null,
         message: message || null,
+        expectedGuestId: expectedGuest?.id ?? null,
       },
     });
     return { status: "success", message: "Thank you! Your RSVP has been received." };
