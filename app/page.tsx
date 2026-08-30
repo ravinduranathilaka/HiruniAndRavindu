@@ -75,8 +75,7 @@ export default function Home({ inviteeName, invitationSlug }: { inviteeName?: st
 
   useEffect(() => {
     if (!showInvitationCue) return;
-    const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 3200;
-    const timer = window.setTimeout(() => setShowInvitationCue(false), delay);
+    const timer = window.setTimeout(() => setShowInvitationCue(false), 3200);
     return () => window.clearTimeout(timer);
   }, [showInvitationCue]);
 
@@ -112,6 +111,7 @@ export default function Home({ inviteeName, invitationSlug }: { inviteeName?: st
       music.play().then(() => setMusicPlaying(true)).catch(() => setMusicPlaying(false));
     }
     setOpened(true);
+    if (!finishingOpening) setShowInvitationCue(true);
   };
 
   const cueOpeningFade = () => {

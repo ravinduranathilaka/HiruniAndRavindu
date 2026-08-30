@@ -33,10 +33,10 @@ p,h1,h2,h3 { margin-top:0; }
 .invitation-toggle.is-seen { animation:none; }
 .invitation-toggle .icon { width:1.1rem; height:1.1rem; animation:invitation-icon-bounce 2.2s ease-in-out infinite; }
 .invitation-toggle.is-seen .icon { animation:none; }
-.invitation-cue { position:fixed; z-index:49; right:1.1rem; bottom:7.8rem; width:3.1rem; height:auto; pointer-events:none; filter:drop-shadow(0 2px 2px #1b140a99); -webkit-mask-image:linear-gradient(to bottom,#000 0 40%,transparent 60%); mask-image:linear-gradient(to bottom,#000 0 40%,transparent 60%); -webkit-mask-size:100% 250%; mask-size:100% 250%; -webkit-mask-position:0 100%; mask-position:0 100%; clip-path:inset(0 0 100%); animation:chalk-arrow-reveal 1.6s ease-in-out 2; }
+.invitation-cue { position:fixed; z-index:49; right:1.1rem; bottom:7.8rem; width:3.1rem; height:auto; pointer-events:none; opacity:0; -webkit-clip-path:inset(0 0 100%); clip-path:inset(0 0 100%); animation:chalk-arrow-reveal 1.6s ease-in-out 2; }
 @keyframes invitation-button-pulse { 0%,100% { background:rgba(48,41,31,.84); color:white; } 50% { background:#ecddbf; color:#765529; } }
 @keyframes invitation-icon-bounce { 0%,38%,58%,72%,100% { transform:translateY(0); } 48% { transform:translateY(-.18rem); } 65% { transform:translateY(-.07rem); } }
-@keyframes chalk-arrow-reveal { 0% { opacity:0; -webkit-mask-position:0 100%; mask-position:0 100%; clip-path:inset(0 0 100%); } 10% { opacity:.92; } 72%,88% { opacity:.92; -webkit-mask-position:0 0; mask-position:0 0; clip-path:inset(0); } 100% { opacity:0; -webkit-mask-position:0 0; mask-position:0 0; clip-path:inset(0); } }
+@keyframes chalk-arrow-reveal { 0% { opacity:0; -webkit-clip-path:inset(0 0 100%); clip-path:inset(0 0 100%); } 10% { opacity:.92; } 72%,88% { opacity:.92; -webkit-clip-path:inset(0); clip-path:inset(0); } 100% { opacity:0; -webkit-clip-path:inset(0); clip-path:inset(0); } }
 
 .invitation-backdrop { position:fixed; z-index:100; inset:0; padding:clamp(.75rem,3vw,2rem); display:grid; place-items:center; overflow:auto; background:rgba(28,24,18,.72); backdrop-filter:blur(7px); animation:invitation-fade .35s ease both; }
 .invitation-card { position:relative; width:min(100%,38rem); min-height:min(44rem,calc(100svh - 2rem)); padding:clamp(6.4rem,16vw,8.2rem) clamp(1.35rem,8vw,4rem) 2rem; overflow:hidden; border:1px solid #b89559; background:#fbf8ef; color:#302b23; box-shadow:0 2rem 6rem #18120a80; text-align:center; animation:invitation-rise .55s cubic-bezier(.2,.75,.25,1) both; }
@@ -202,7 +202,7 @@ footer small { display:block; margin-top:1.5rem; color:#897d6b; font-size:.62rem
   .invitation-venue { margin-top:1rem; }
   .invitation-seal { display:none; }
 }
-@media (prefers-reduced-motion:reduce) { html{scroll-behavior:auto} *,*::before,*::after{transition-duration:.01ms!important} .hero-slide,.opening-trigger small,.scroll-cue,.invitation-toggle,.invitation-toggle .icon,.invitation-backdrop,.invitation-card{animation:none!important} .invitation-cue{display:none} }
+@media (prefers-reduced-motion:reduce) { html{scroll-behavior:auto} *,*::before,*::after{transition-duration:.01ms!important} .hero-slide,.opening-trigger small,.scroll-cue,.invitation-toggle,.invitation-toggle .icon,.invitation-backdrop,.invitation-card{animation:none!important} .invitation-cue{opacity:.92; -webkit-clip-path:inset(0); clip-path:inset(0); animation:none!important} }
 :focus-visible { outline:2px solid var(--gold-dark); outline-offset:3px; }
 
 /* Admin guest ledger */
