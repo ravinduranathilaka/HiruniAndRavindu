@@ -27,7 +27,7 @@ const expectedGuestSchema = z.object({
   partyId: id,
   invitedPersons: count.min(1).max(10),
 }).transform((data) => ({ ...data, invitedPersons: invitationGuestCount(data.addition, data.invitedPersons) }));
-const partySchema = z.object({ name: text, maxGuestCount: count });
+const partySchema = z.object({ by: z.string().trim().max(120).transform((value) => value || null), name: text, maxGuestCount: count });
 const rsvpSchema = z.object({
   fullName: text,
   phoneNumber: z.string().transform(normalizeSriLankanPhone).pipe(z.string().regex(SRI_LANKAN_PHONE_NUMBER)),
@@ -171,7 +171,7 @@ export async function deleteRsvp(rsvpId: string, formData: FormData) {
 export async function createParty(formData: FormData) {
   await requireAdmin(true);
   const result = partySchema.safeParse(Object.fromEntries(formData));
-  if (!result.success) destination("parties", undefined, "Enter a party name and maximum guest count.");
+  if (!result.success) destination("parties", undefined, "Enter a party name, by, and maximum guest count.");
   try {
     await prisma.invitingParty.create({ data: result.data! });
   } catch (error) {
@@ -184,7 +184,7 @@ export async function createParty(formData: FormData) {
 export async function updateParty(partyId: string, formData: FormData) {
   await requireAdmin(true);
   const result = partySchema.safeParse(Object.fromEntries(formData));
-  if (!result.success) destination("parties", undefined, "Enter a party name and maximum guest count.");
+  if (!result.success) destination("parties", undefined, "Enter a party name, by, and maximum guest count.");
   try {
     await prisma.invitingParty.update({ where: { id: partyId }, data: result.data! });
   } catch (error) {

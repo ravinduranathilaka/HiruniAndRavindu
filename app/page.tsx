@@ -185,13 +185,6 @@ export default function Home({ inviteeName, invitationSlug }: { inviteeName?: st
         <div className="invitation-backdrop" onClick={(event) => event.target === event.currentTarget && setInvitationOpen(false)}>
           <article className="invitation-card" role="dialog" aria-modal="true" aria-labelledby="invitation-title" aria-describedby="invitation-description">
             <button ref={invitationCloseButton} className="invitation-close" type="button" onClick={() => setInvitationOpen(false)} aria-label="Close wedding invitation"><Icon name="close" /></button>
-            <svg className="invitation-canopy" viewBox="0 0 600 128" aria-hidden="true">
-              <path className="canopy-line" d="M34 115C112 15 488 15 566 115" />
-              <path className="canopy-line fine" d="M57 115C131 38 469 38 543 115" />
-              <path className="canopy-leaves" d="M76 93l12 18 8-22 14 17 6-23 16 15 3-24 18 13v-24l19 11 3-24 18 9 6-24 17 8 9-23 16 6 12-22 15 5 15-20 14 4 15-18 15 18 14-4 15 20 15-5 12 22 16-6 9 23 17-8 6 24 18-9 3 24 19-11v24l18-13 3 24 16-15 6 23 14-17 8 22 12-18" />
-              <path className="canopy-lotus" d="M300 93c-18-13-22-31 0-53 22 22 18 40 0 53Zm0 0c-25-3-38-17-31-46 27 10 35 27 31 46Zm0 0c25-3 38-17 31-46-27 10-35 27-31 46Zm0 0c-17 9-34 7-48-10 20-14 37-9 48 10Zm0 0c17 9 34 7 48-10-20-14-37-9-48 10Z" />
-            </svg>
-
             <div className="invitation-copy">
               <p className="invitation-kicker">Together with their families</p>
               <h2 id="invitation-title"><span>Hiruni</span><i>&amp;</i><span>Ravindu</span></h2>
@@ -210,7 +203,6 @@ export default function Home({ inviteeName, invitationSlug }: { inviteeName?: st
                 <span>Kandy, Sri Lanka</span>
               </div>
             </div>
-            <div className="invitation-seal" aria-hidden="true"><span>H</span><i>&amp;</i><span>R</span></div>
           </article>
         </div>
       )}

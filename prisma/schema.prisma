@@ -26,6 +26,7 @@ model Rsvp {
 model InvitingParty {
   id             String          @id @default(cuid())
   name           String          @unique
+  by             String?
   maxGuestCount  Int
   expectedGuests ExpectedGuest[]
   createdAt      DateTime        @default(now())
