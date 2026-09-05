@@ -67,29 +67,29 @@ function RsvpFields({
 }) {
   return (
     <div className="admin-form-grid">
-      <input type="hidden" name="returnTab" value={returnTab} />
-      <label>Full name<input name="fullName" defaultValue={response?.fullName ?? defaultName ?? ""} required maxLength={120} /></label>
-      <label>Phone<input name="phoneNumber" type="tel" defaultValue={response?.phoneNumber ?? "+94"} required /></label>
-      <label>Email<input name="email" type="email" defaultValue={response?.email ?? ""} /></label>
-      <label>Response
-        <select name="attending" defaultValue={String(response?.attending ?? true)}>
+      <input type="hidden" name="returnTab" value={returnTab} suppressHydrationWarning />
+      <label suppressHydrationWarning>Full name<input name="fullName" defaultValue={response?.fullName ?? defaultName ?? ""} required maxLength={120} suppressHydrationWarning /></label>
+      <label suppressHydrationWarning>Phone<input name="phoneNumber" type="tel" defaultValue={response?.phoneNumber ?? "+94"} required suppressHydrationWarning /></label>
+      <label suppressHydrationWarning>Email<input name="email" type="email" defaultValue={response?.email ?? ""} suppressHydrationWarning /></label>
+      <label suppressHydrationWarning>Response
+        <select name="attending" defaultValue={String(response?.attending ?? true)} suppressHydrationWarning>
           <option value="true">Attending</option>
           <option value="false">Declined</option>
         </select>
       </label>
-      <label>Attendance group
-        <select name="whoAttending" defaultValue={response?.whoAttending ?? "ONLY_MYSELF"}>
+      <label suppressHydrationWarning>Attendance group
+        <select name="whoAttending" defaultValue={response?.whoAttending ?? "ONLY_MYSELF"} suppressHydrationWarning>
           {Object.entries(attendanceLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </select>
       </label>
-      <label>Actual guests<input name="guestCount" type="number" min="0" max="9999" defaultValue={response?.guestCount ?? defaultCount} required /></label>
-      <label className="admin-span-2">Match to invitation
-        <select name="expectedGuestId" defaultValue={response?.expectedGuestId ?? defaultGuest ?? ""}>
+      <label suppressHydrationWarning>Actual guests<input name="guestCount" type="number" min="0" max="9999" defaultValue={response?.guestCount ?? defaultCount} required suppressHydrationWarning /></label>
+      <label className="admin-span-2" suppressHydrationWarning>Match to invitation
+        <select name="expectedGuestId" defaultValue={response?.expectedGuestId ?? defaultGuest ?? ""} suppressHydrationWarning>
           <option value="">Unmatched</option>
           {guests.map((guest) => <option key={guest.id} value={guest.id}>{guest.name} — {guest.party.name}</option>)}
         </select>
       </label>
-      <label className="admin-span-2">Message<textarea name="message" rows={2} defaultValue={response?.message ?? ""} maxLength={1000} /></label>
+      <label className="admin-span-2" suppressHydrationWarning>Message<textarea name="message" rows={2} defaultValue={response?.message ?? ""} maxLength={1000} suppressHydrationWarning /></label>
     </div>
   );
 }
@@ -190,7 +190,7 @@ export default async function AdminPage({
         </div>
         <div className="admin-header-actions">
           <span className="admin-role">{role === "super" ? "Super admin" : "Admin"}</span>
-          <form action={logout}><AdminSubmitButton className="admin-quiet-button">Sign out</AdminSubmitButton></form>
+          <form action={logout} suppressHydrationWarning><AdminSubmitButton className="admin-quiet-button">Sign out</AdminSubmitButton></form>
         </div>
       </header>
 
@@ -231,8 +231,8 @@ export default async function AdminPage({
                       <td className="admin-message">{guest.rsvp?.message || "—"}</td>
                       <td>{guest.rsvp?.createdAt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) ?? "—"}</td>
                       <td><AdminModal title={`Edit ${invitationName(guest)}`}>
-                        <section className="admin-dialog-section"><h3>Invitation</h3><form action={updateExpectedGuest.bind(null, guest.id)}><ExpectedGuestFields guest={guest} parties={parties} /><div className="admin-form-actions"><AdminSubmitButton>Save invitation</AdminSubmitButton><AdminSubmitButton className="danger" formAction={deleteExpectedGuest.bind(null, guest.id)}>Delete guest</AdminSubmitButton></div></form></section>
-                        <section className="admin-dialog-section"><h3>RSVP</h3>{guest.rsvp ? <form action={updateRsvp.bind(null, guest.rsvp.id)}><RsvpFields response={guest.rsvp} guests={guestOptions} returnTab="manage" /><div className="admin-form-actions"><AdminSubmitButton>Save RSVP</AdminSubmitButton><AdminSubmitButton className="danger" formAction={deleteRsvp.bind(null, guest.rsvp.id)}>Delete RSVP</AdminSubmitButton></div></form> : <form action={createRsvp}><RsvpFields guests={guestOptions} returnTab="manage" defaultGuest={guest.id} defaultName={invitationName(guest)} defaultCount={guest.invitedPersons} /><AdminSubmitButton>Add RSVP</AdminSubmitButton></form>}</section>
+                        <section className="admin-dialog-section"><h3>Invitation</h3><form action={updateExpectedGuest.bind(null, guest.id)} suppressHydrationWarning><ExpectedGuestFields guest={guest} parties={parties} /><div className="admin-form-actions"><AdminSubmitButton>Save invitation</AdminSubmitButton><AdminSubmitButton className="danger" formAction={deleteExpectedGuest.bind(null, guest.id)}>Delete guest</AdminSubmitButton></div></form></section>
+                        <section className="admin-dialog-section"><h3>RSVP</h3>{guest.rsvp ? <form action={updateRsvp.bind(null, guest.rsvp.id)} suppressHydrationWarning><RsvpFields response={guest.rsvp} guests={guestOptions} returnTab="manage" /><div className="admin-form-actions"><AdminSubmitButton>Save RSVP</AdminSubmitButton><AdminSubmitButton className="danger" formAction={deleteRsvp.bind(null, guest.rsvp.id)}>Delete RSVP</AdminSubmitButton></div></form> : <form action={createRsvp} suppressHydrationWarning><RsvpFields guests={guestOptions} returnTab="manage" defaultGuest={guest.id} defaultName={invitationName(guest)} defaultCount={guest.invitedPersons} /><AdminSubmitButton>Add RSVP</AdminSubmitButton></form>}</section>
                       </AdminModal></td>
                     </tr>
                   );
@@ -247,7 +247,7 @@ export default async function AdminPage({
         <section className="admin-panel">
           <div className="admin-section-heading">
             <div><p className="admin-kicker">Unmatched submissions</p><h2>Unknown RSVP</h2></div>
-            <details className="admin-create"><summary>Add response</summary><form action={createRsvp}><RsvpFields guests={guestOptions} returnTab="manage" /><AdminSubmitButton>Add response</AdminSubmitButton></form></details>
+            <details className="admin-create"><summary>Add response</summary><form action={createRsvp} suppressHydrationWarning><RsvpFields guests={guestOptions} returnTab="manage" /><AdminSubmitButton>Add response</AdminSubmitButton></form></details>
           </div>
 
           {!unmatchedResponses.length ? <Empty>No unknown RSVP submissions.</Empty> : (
@@ -263,7 +263,7 @@ export default async function AdminPage({
                     <td>{response.guestCount}</td>
                     <td className="admin-message">{response.message || "—"}</td>
                     <td>{response.createdAt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</td>
-                    <td><AdminModal title={`Edit RSVP from ${response.fullName}`}><form action={updateRsvp.bind(null, response.id)}><RsvpFields response={response} guests={guestOptions} returnTab="manage" /><div className="admin-form-actions"><AdminSubmitButton>Save RSVP</AdminSubmitButton><AdminSubmitButton className="danger" formAction={deleteRsvp.bind(null, response.id)}>Delete RSVP</AdminSubmitButton></div></form></AdminModal></td>
+                    <td><AdminModal title={`Edit RSVP from ${response.fullName}`}><form action={updateRsvp.bind(null, response.id)} suppressHydrationWarning><RsvpFields response={response} guests={guestOptions} returnTab="manage" /><div className="admin-form-actions"><AdminSubmitButton>Save RSVP</AdminSubmitButton><AdminSubmitButton className="danger" formAction={deleteRsvp.bind(null, response.id)}>Delete RSVP</AdminSubmitButton></div></form></AdminModal></td>
                   </tr>;
                 })}</tbody>
               </table>
@@ -276,9 +276,9 @@ export default async function AdminPage({
         <section className="admin-panel">
           <div className="admin-section-heading">
             <div><p className="admin-kicker">Super admin</p><h2>Inviting party management</h2></div>
-            <details className="admin-create"><summary>Add inviting party</summary><form action={createParty}><div className="admin-form-grid"><label>Party name<input name="name" required maxLength={120} /></label><label>By<input name="by" maxLength={120} /></label><label>Maximum guests<input name="maxGuestCount" type="number" min="0" max="9999" required /></label></div><AdminSubmitButton>Add party</AdminSubmitButton></form></details>
+            <details className="admin-create"><summary>Add inviting party</summary><form action={createParty} suppressHydrationWarning><div className="admin-form-grid"><label suppressHydrationWarning>Party name<input name="name" required maxLength={120} suppressHydrationWarning /></label><label suppressHydrationWarning>By<input name="by" maxLength={120} suppressHydrationWarning /></label><label suppressHydrationWarning>Maximum guests<input name="maxGuestCount" type="number" min="0" max="9999" required suppressHydrationWarning /></label></div><AdminSubmitButton>Add party</AdminSubmitButton></form></details>
           </div>
-          {!parties.length ? <Empty>No inviting parties yet. Add the first one above.</Empty> : <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Inviting party</th><th>By</th><th>Guest entries</th><th>Invited persons</th><th>Maximum guests</th><th><span className="sr-only">Actions</span></th></tr></thead><tbody>{parties.map((party) => <tr key={party.id}><td className="admin-primary-cell">{party.name}</td><td>{party.by || "—"}</td><td>{party.expectedGuests.length}</td><td>{party.expectedGuests.reduce((sum, guest) => sum + guest.invitedPersons, 0)}</td><td>{party.maxGuestCount}</td><td><AdminModal title={`Edit ${party.name}`}><form action={updateParty.bind(null, party.id)}><div className="admin-form-grid"><label>Name<input name="name" defaultValue={party.name} required /></label><label>By<input name="by" defaultValue={party.by ?? ""} maxLength={120} /></label><label>Maximum guests<input name="maxGuestCount" type="number" min="0" defaultValue={party.maxGuestCount} required /></label></div><div className="admin-form-actions"><AdminSubmitButton>Save party</AdminSubmitButton><AdminSubmitButton className="danger" formAction={deleteParty.bind(null, party.id)}>Delete party</AdminSubmitButton></div><p className="admin-form-hint">Deleting a party also removes its guest entries. Matched RSVP responses remain unmatched.</p></form></AdminModal></td></tr>)}</tbody></table></div>}
+          {!parties.length ? <Empty>No inviting parties yet. Add the first one above.</Empty> : <div className="admin-table-wrap"><table className="admin-table"><thead><tr><th>Inviting party</th><th>By</th><th>Guest entries</th><th>Invited persons</th><th>Maximum guests</th><th><span className="sr-only">Actions</span></th></tr></thead><tbody>{parties.map((party) => <tr key={party.id}><td className="admin-primary-cell">{party.name}</td><td>{party.by || "—"}</td><td>{party.expectedGuests.length}</td><td>{party.expectedGuests.reduce((sum, guest) => sum + guest.invitedPersons, 0)}</td><td>{party.maxGuestCount}</td><td><AdminModal title={`Edit ${party.name}`}><form action={updateParty.bind(null, party.id)} suppressHydrationWarning><div className="admin-form-grid"><label suppressHydrationWarning>Name<input name="name" defaultValue={party.name} required suppressHydrationWarning /></label><label suppressHydrationWarning>By<input name="by" defaultValue={party.by ?? ""} maxLength={120} suppressHydrationWarning /></label><label suppressHydrationWarning>Maximum guests<input name="maxGuestCount" type="number" min="0" defaultValue={party.maxGuestCount} required suppressHydrationWarning /></label></div><div className="admin-form-actions"><AdminSubmitButton>Save party</AdminSubmitButton><AdminSubmitButton className="danger" formAction={deleteParty.bind(null, party.id)}>Delete party</AdminSubmitButton></div><p className="admin-form-hint">Deleting a party also removes its guest entries. Matched RSVP responses remain unmatched.</p></form></AdminModal></td></tr>)}</tbody></table></div>}
         </section>
       )}
 

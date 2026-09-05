@@ -15,7 +15,7 @@ export function AddExpectedGuestForm({ parties }: { parties: { id: string; name:
   }, [state]);
 
   return (
-    <form ref={form} action={action} aria-busy={pending}>
+    <form ref={form} action={action} aria-busy={pending} suppressHydrationWarning>
       <ExpectedGuestFields key={state.guestId ?? "new"} parties={parties} />
       <button type="submit" disabled={!parties.length || pending}>
         {pending && <span className="admin-button-spinner" aria-hidden="true" />}

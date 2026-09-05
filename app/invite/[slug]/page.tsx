@@ -8,7 +8,7 @@ type InvitationProps = { params: Promise<{ slug: string }> };
 
 const guestFor = async (params: InvitationProps["params"]) => {
   const { slug } = await params;
-  return prisma.expectedGuest.findUnique({ where: { slug }, select: { namePrefix: true, name: true, addition: true, invitedPersons: true, slug: true } });
+  return prisma.expectedGuest.findUnique({ where: { slug }, select: { namePrefix: true, name: true, addition: true, invitedPersons: true, slug: true, party: { select: { by: true } } } });
 };
 
 export async function generateMetadata({ params }: InvitationProps): Promise<Metadata> {
@@ -19,5 +19,5 @@ export async function generateMetadata({ params }: InvitationProps): Promise<Met
 export default async function InvitationPage({ params }: InvitationProps) {
   const guest = await guestFor(params);
   if (!guest) notFound();
-  return <Home inviteeName={invitationName(guest)} invitationSlug={guest.slug} />;
+  return <Home inviteeName={invitationName(guest)} invitedBy={guest.party.by ?? undefined} invitationSlug={guest.slug} />;
 }

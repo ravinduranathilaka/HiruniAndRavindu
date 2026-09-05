@@ -26,7 +26,7 @@ const mapSrc = "https://www.google.com/maps?q=7.3027672,80.6367887&output=embed"
 const mapUrl = "https://maps.app.goo.gl/ZJ6S4TzJ5DrnDfjH8";
 const calendarUrl = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Hiruni+%26+Ravindu+Wedding&dates=20261214T093000%2F20261214T153000&ctz=Asia%2FColombo&details=Wedding+celebration&location=The+Grand+Kandyan+Hotel%2C+Kandy%2C+Sri+Lanka";
 
-export default function Home({ inviteeName, invitationSlug }: { inviteeName?: string; invitationSlug?: string }) {
+export default function Home({ inviteeName, invitedBy, invitationSlug }: { inviteeName?: string; invitedBy?: string; invitationSlug?: string }) {
   const hasValidInvitation = Boolean(invitationSlug && slugify(invitationSlug) === invitationSlug);
   const [opening, setOpening] = useState(false);
   const [finishingOpening, setFinishingOpening] = useState(false);
@@ -151,7 +151,7 @@ export default function Home({ inviteeName, invitationSlug }: { inviteeName?: st
           </video>
           {!opening ? (
             <button className="opening-trigger" type="button" onClick={beginOpening}>
-              <span>Hiruni & Ravindu</span><small>Tap to open</small>
+              <span>Hiruni &amp; Ravindu</span><small>Tap to open</small>
             </button>
           ) : (
             <button className="opening-skip" type="button" onClick={skipOpening}>Skip</button>
@@ -186,11 +186,11 @@ export default function Home({ inviteeName, invitationSlug }: { inviteeName?: st
           <article className="invitation-card" role="dialog" aria-modal="true" aria-labelledby="invitation-title" aria-describedby="invitation-description">
             <button ref={invitationCloseButton} className="invitation-close" type="button" onClick={() => setInvitationOpen(false)} aria-label="Close wedding invitation"><Icon name="close" /></button>
             <div className="invitation-copy">
-              <p className="invitation-kicker">Together with their families</p>
-              <h2 id="invitation-title"><span>Hiruni</span><i>&amp;</i><span>Ravindu</span></h2>
-              <p id="invitation-description" className="invitation-request">request the pleasure of the company of</p>
+              {invitedBy && <p className="invitation-host">{invitedBy}</p>}
+              <p id="invitation-description" className="invitation-request">{invitedBy ? "requests the pleasure of the company of" : "Hiruni & Ravindu request the pleasure of the company of"}</p>
               <p className="invitee-name">{inviteeName ?? "Our Family & Friends"}</p>
-              <p className="invitation-request">to celebrate their marriage</p>
+              <p className="invitation-request">to celebrate the marriage of</p>
+              <h2 id="invitation-title"><span>Hiruni</span><i>&amp;</i><span>Ravindu</span></h2>
 
               <div className="invitation-date" aria-label="Monday, December 14, 2026">
                 <span>December</span><strong>14</strong><span>Monday<br />2026</span>
@@ -202,6 +202,7 @@ export default function Home({ inviteeName, invitationSlug }: { inviteeName?: st
                 <strong>The Grand Kandyan Hotel</strong>
                 <span>Kandy, Sri Lanka</span>
               </div>
+              <span className="hr-monogram invitation-monogram" aria-hidden="true" />
             </div>
           </article>
         </div>

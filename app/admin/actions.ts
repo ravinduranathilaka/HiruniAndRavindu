@@ -191,6 +191,7 @@ export async function updateParty(partyId: string, formData: FormData) {
     destination("parties", undefined, databaseError(error));
   }
   revalidatePath("/admin");
+  revalidatePath("/invite/[slug]", "page");
   destination("parties", "Inviting party updated.");
 }
 

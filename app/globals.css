@@ -19,6 +19,7 @@ p,h1,h2,h3 { margin-top:0; }
 .opening-wash-out { position:fixed; z-index:101; inset:0; pointer-events:none; background:var(--veil); animation:opening-wash-out 1.6s cubic-bezier(.4,0,.2,1) forwards; }
 .opening-video { width:100%; height:100%; object-fit:cover; background:transparent; }
 .opening-trigger { position:absolute; inset:0; width:100%; padding-top:53vh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.45rem; border:0; background:linear-gradient(180deg,transparent 45%,rgba(39,28,13,.36)); color:white; cursor:pointer; }
+.hr-monogram { display:block; aspect-ratio:450/480; background:currentColor; -webkit-mask:url('/img/logo.png') center/contain no-repeat; mask:url('/img/logo.png') center/contain no-repeat; }
 .opening-trigger span { font-family:var(--script); font-size:clamp(1.6rem,3vw,2.2rem); font-style:italic; }
 .opening-trigger small,.opening-skip { font-size:.62rem; letter-spacing:.34em; text-transform:uppercase; }
 .opening-trigger small { animation:pulse 2s ease-in-out infinite; }
@@ -39,14 +40,17 @@ p,h1,h2,h3 { margin-top:0; }
 @keyframes chalk-arrow-reveal { 0% { opacity:0; -webkit-clip-path:inset(0 0 100%); clip-path:inset(0 0 100%); } 10% { opacity:.92; } 72%,88% { opacity:.92; -webkit-clip-path:inset(0); clip-path:inset(0); } 100% { opacity:0; -webkit-clip-path:inset(0); clip-path:inset(0); } }
 
 .invitation-backdrop { position:fixed; z-index:100; inset:0; padding:clamp(.75rem,3vw,2rem); display:grid; place-items:center; overflow:auto; background:rgba(28,24,18,.72); backdrop-filter:blur(7px); animation:invitation-fade .35s ease both; }
-.invitation-card { position:relative; width:min(100%,38rem); min-height:min(44rem,calc(100svh - 2rem)); padding:clamp(4rem,10vw,6rem) clamp(1.35rem,8vw,4rem) 2rem; overflow:hidden; border:0; background:#f4ead4 url('/img/invbg.png') center/cover no-repeat; color:#4a2d0f; box-shadow:none; text-align:center; animation:invitation-rise .55s cubic-bezier(.2,.75,.25,1) both; }
+.invitation-card { position:relative; width:min(100%,38rem); min-height:min(44rem,calc(100svh - 2rem)); padding:clamp(2.75rem,7vw,4.25rem) clamp(1.35rem,8vw,4rem) 2rem; overflow:hidden; border:0; background:#f4ead4 url('/img/invbg.png') center/cover no-repeat; color:#4a2d0f; box-shadow:none; text-align:center; animation:invitation-rise .55s cubic-bezier(.2,.75,.25,1) both; }
 .invitation-close { position:absolute; z-index:2; top:.75rem; right:.75rem; width:2.25rem; height:2.25rem; padding:0; border:0; background:transparent; color:#4a2d0f; font-family:var(--sans); font-size:1.4rem; line-height:1; cursor:pointer; }
 .invitation-close:hover { opacity:.7; }
 .invitation-close .icon { width:1.1rem; height:1.1rem; margin:auto; }
 .invitation-copy { position:relative; z-index:1; width:68%; margin:0 auto; }
-.invitation-kicker { margin:0 0 1rem; color:#4a2d0f; font-size:.63rem; letter-spacing:.28em; text-transform:uppercase; }
 .invitation-copy h2 { margin:0; display:flex; align-items:center; justify-content:center; gap:clamp(.75rem,4vw,1.6rem); color:#4a2d0f; font-family:var(--display); font-size:clamp(2.5rem,9vw,4rem); font-weight:400; line-height:.9; }
 .invitation-copy h2 i { color:#4a2d0f; font-family:var(--script); font-size:.55em; font-weight:300; }
+.invitation-monogram { width:clamp(3.8rem,12vw,5rem); margin:0 auto .55rem; color:#4a2d0f; }
+.invitation-venue + .invitation-monogram { margin:1.25rem auto 0; }
+.invitation-host { margin:.15rem 0 .35rem; color:#4a2d0f; font-family:var(--display); font-size:clamp(1.35rem,4vw,1.8rem); font-weight:400; line-height:1.1; }
+.invitation-host + .invitation-request { margin-top:0; }
 .invitation-request { margin:1.1rem 0 .55rem; color:#4a2d0f; font-family:var(--script); font-size:1.02rem; line-height:1.35; }
 .invitee-name { width:min(100%,23rem); margin:.6rem auto 0; padding:.55rem 1rem .45rem; border-top:1px solid #b88742; border-bottom:1px solid #b88742; color:#4a2d0f; font-family:var(--script); font-size:clamp(1.75rem,6vw,2.35rem); font-style:italic; line-height:1; }
 .invitation-date { width:min(100%,21rem); margin:1.35rem auto 0; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; color:#4a2d0f; }
@@ -181,7 +185,7 @@ footer small { display:block; margin-top:1.5rem; color:#897d6b; font-size:.62rem
   .choice-row { grid-template-columns:1fr; }
   .opening-trigger { padding-top:48vh; }
   .opening-skip { right:1rem; bottom:1rem; }
-  .invitation-card { min-height:0; padding-top:5.75rem; padding-bottom:1.4rem; }
+  .invitation-card { min-height:0; padding-top:4.25rem; padding-bottom:1.4rem; }
   .invitation-copy { width:74%; }
   .invitation-copy h2 { flex-wrap:wrap; gap:.25rem .65rem; }
   .invitation-copy h2 i { flex:0 0 auto; }
