@@ -17,7 +17,7 @@ const timeline = [
   ["9:14 AM", "heart", "We Marry", "Sacred vows on Poruwa"],
   ["10:25 AM", "glass", "We Raise a Toast", "Drinks & celebrations begin"],
   ["12:30 PM", "utensils", "We Dine", "Delightful wedding feast"],
-  ["01:30 PM", "music", "We Dance", "Celebrate with music & joy"],
+  ["02:00 PM", "music", "We Dance", "Celebrate with music & joy"],
   ["03:00 PM", "sparkles", "We Celebrate", "The ceremonial gathering"],
   ["04:00 PM", "wave", "We Say Goodbye", "A beautiful send-off"],
 ] as const satisfies readonly (readonly [string, IconName, string, string])[];
