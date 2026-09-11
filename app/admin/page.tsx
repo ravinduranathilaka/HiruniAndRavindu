@@ -184,7 +184,7 @@ export default async function AdminPage({
     <main className="admin-shell">
       <header className="admin-header">
         <div>
-          <p className="admin-kicker">Wedding operations · 14 December 2026</p>
+          <p className="admin-kicker">Wedding operations · 2 December 2026</p>
           <h1>Guest ledger</h1>
           <p>{expectedGuests.length} invitations · {totalInvited} invited · {totalConfirmed} confirmed</p>
         </div>

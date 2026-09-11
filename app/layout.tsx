@@ -23,7 +23,7 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: "Hiruni & Ravindu — Wedding Invitation",
-  description: "Join Hiruni and Ravindu as they celebrate their wedding on December 14, 2026.",
+  description: "Join Hiruni and Ravindu as they celebrate their wedding on December 2, 2026.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

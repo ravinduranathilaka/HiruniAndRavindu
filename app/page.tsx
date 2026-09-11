@@ -24,7 +24,7 @@ const timeline = [
 
 const mapSrc = "https://www.google.com/maps?q=7.3027672,80.6367887&output=embed";
 const mapUrl = "https://maps.app.goo.gl/ZJ6S4TzJ5DrnDfjH8";
-const calendarUrl = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Hiruni+%26+Ravindu+Wedding&dates=20261214T093000%2F20261214T153000&ctz=Asia%2FColombo&details=Wedding+celebration&location=The+Grand+Kandyan+Hotel%2C+Kandy%2C+Sri+Lanka";
+const calendarUrl = "https://calendar.google.com/calendar/render?action=TEMPLATE&text=Hiruni+%26+Ravindu+Wedding&dates=20261202T093000%2F20261202T153000&ctz=Asia%2FColombo&details=Wedding+celebration&location=The+Grand+Kandyan+Hotel%2C+Kandy%2C+Sri+Lanka";
 
 export default function Home({ inviteeName, invitedBy, invitationSlug }: { inviteeName?: string; invitedBy?: string; invitationSlug?: string }) {
   const hasValidInvitation = Boolean(invitationSlug && slugify(invitationSlug) === invitationSlug);
@@ -192,8 +192,8 @@ export default function Home({ inviteeName, invitedBy, invitationSlug }: { invit
               <p className="invitation-request">to celebrate the marriage of</p>
               <h2 id="invitation-title"><span>Hiruni</span><i>&amp;</i><span>Ravindu</span></h2>
 
-              <div className="invitation-date" aria-label="Monday, December 14, 2026">
-                <span>December</span><strong>14</strong><span>Monday<br />2026</span>
+              <div className="invitation-date" aria-label="Wednesday, December 2, 2026">
+                <span>December</span><strong>2</strong><span>Wednesday<br />2026</span>
               </div>
 
               <p className="invitation-time">9:30 in the morning <span>until</span> 3:30 in the afternoon</p>
@@ -232,7 +232,7 @@ export default function Home({ inviteeName, invitedBy, invitationSlug }: { invit
         <div className="hero-copy">
           <p className="section-label on-dark">Save the date</p>
           <h1>Hiruni&<br />Ravindu</h1>
-          <div className="hero-date"><span>December</span><strong>14</strong><span>2026</span></div>
+          <div className="hero-date"><span>December</span><strong>2</strong><span>2026</span></div>
           <a className="scroll-cue" href="#couple"><span>Scroll Down</span><Icon name="chevron-down" /></a>
         </div>
         <div className="slider-dots" aria-label="Wedding photos">
@@ -300,7 +300,7 @@ export default function Home({ inviteeName, invitedBy, invitationSlug }: { invit
         </div>
       </section>
 
-      <footer><h3>Hiruni & Ravindu</h3><p>December 14 2026</p><p>Hiruni: 0715129071 &nbsp;|&nbsp; Ravindu: 0715328308</p><small>© 2026 ravinduranathilaka | All rights reserved</small></footer>
+      <footer><h3>Hiruni & Ravindu</h3><p>December 2 2026</p><p>Hiruni: 0715129071 &nbsp;|&nbsp; Ravindu: 0715328308</p><small>© 2026 ravinduranathilaka | All rights reserved</small></footer>
     </main>
   );
 }
