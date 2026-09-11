@@ -13,13 +13,13 @@ const slides = [
 ] as const;
 
 const timeline = [
-  ["9:30 AM", "pin", "We Welcome You", "Welcome & seating"],
-  ["9:50 AM", "heart", "We Marry", "Sacred vows on Poruwa"],
+  ["9:00 AM", "pin", "We Welcome You", "Welcome & seating"],
+  ["9:14 AM", "heart", "We Marry", "Sacred vows on Poruwa"],
   ["10:25 AM", "glass", "We Raise a Toast", "Drinks & celebrations begin"],
-  ["11:30 AM", "utensils", "We Dine", "Delightful wedding feast"],
-  ["12:30 PM", "music", "We Dance", "Celebrate with music & joy"],
-  ["01:15 PM", "sparkles", "We Celebrate", "The ceremonial gathering"],
-  ["03:20 PM", "wave", "We Say Goodbye", "A beautiful send-off"],
+  ["12:30 PM", "utensils", "We Dine", "Delightful wedding feast"],
+  ["01:30 PM", "music", "We Dance", "Celebrate with music & joy"],
+  ["03:00 PM", "sparkles", "We Celebrate", "The ceremonial gathering"],
+  ["04:00 PM", "wave", "We Say Goodbye", "A beautiful send-off"],
 ] as const satisfies readonly (readonly [string, IconName, string, string])[];
 
 const mapSrc = "https://www.google.com/maps?q=7.3027672,80.6367887&output=embed";
