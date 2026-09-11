@@ -18,7 +18,6 @@ export function RsvpForm({ defaultName, invitationSlug }: { defaultName?: string
   return (
     <form action={formAction} aria-label="Wedding RSVP" suppressHydrationWarning>
       {invitationSlug && <input type="hidden" name="invitationSlug" value={invitationSlug} suppressHydrationWarning />}
-      <span className="form-note">Your Response</span>
 
       <label htmlFor="fullName">Full Name *</label>
       <input id="fullName" name="fullName" type="text" autoComplete="name" maxLength={120} defaultValue={defaultName} required aria-invalid={Boolean(error("fullName"))} suppressHydrationWarning />

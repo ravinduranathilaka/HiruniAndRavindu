@@ -247,19 +247,19 @@ export default function Home({ inviteeName, invitedBy, invitationSlug }: { invit
           <article className="person-card">
             <Image src="/img/bride.jpg" alt="Hiruni — the bride" fill sizes="(max-width: 700px) 288px, 288px" />
             <div className="person-shade" />
-            <div className="person-copy"><h2>Hiruni</h2><span>The Bride</span><p>With a heart full of love and gratitude, I can&apos;t wait to begin this beautiful journey with the one who makes every moment brighter.</p></div>
+            <div className="person-copy"><h2>Hiruni</h2><span>The Bride</span><p>Behind every marriage are two people who love each other more than any else.<br/>I’ll be blessed to begin my journey with the one I love, who loves me even more...</p></div>
           </article>
           <article className="person-card">
             <Image src="/img/groom.jpg" alt="Ravindu — the groom" fill sizes="(max-width: 700px) 288px, 288px" />
             <div className="person-shade" />
-            <div className="person-copy"><h2>Ravindu</h2><span>The Groom</span><p>Every love story is special, but ours is my favorite. I&apos;m blessed to share this journey with the most amazing person.</p></div>
+            <div className="person-copy"><h2>Ravindu</h2><span>The Groom</span><p>Behind every marriage are two imperfect people trying to fit together.<br/>And I can&apos;t wait to start my journey with my perfect imperfection...</p></div>
           </article>
         </div>
         <div className="marriage-note">
           <div className="heart"><Icon name="heart" /></div>
           <p className="section-label">We are</p>
           <h2 className="section-title">Getting Married</h2>
-          <p>From the moment our paths crossed, we knew that our love story was just beginning. Every day since has been a chapter filled with laughter, growth, and unforgettable memories. As we take the next step in our journey together, we invite you to share in the joy of this new chapter.</p>
+          <p>Our journey has unfolded through unexpected turns,<br/>each one gently leading us closer to this moment.<br/>Now, with grateful hearts, we are ready to stand before you<br/>and declare our love for each other.</p>
           <em>— Ravindu & Hiruni —</em>
         </div>
       </section>
@@ -294,7 +294,7 @@ export default function Home({ inviteeName, invitedBy, invitationSlug }: { invit
         <div className="rsvp-wrap">
           <p className="section-label">Be Our Guest</p>
           <h2 className="section-title">RSVP</h2>
-          <p className="rsvp-deadline">Kindly respond by October 20, 2026</p>
+          <p className="rsvp-deadline">Kindly respond by November 20, 2026</p>
           <RsvpForm defaultName={inviteeName} invitationSlug={invitationSlug} />
           <p className="rsvp-contact-note">For any changes, please contact the couple directly using the phone numbers below.</p>
         </div>
