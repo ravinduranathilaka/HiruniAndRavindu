@@ -187,7 +187,7 @@ export default function Home({ inviteeName, invitedBy, invitationSlug }: { invit
             <button ref={invitationCloseButton} className="invitation-close" type="button" onClick={() => setInvitationOpen(false)} aria-label="Close wedding invitation"><Icon name="close" /></button>
             <div className="invitation-copy">
               {invitedBy && <p className="invitation-host">{invitedBy}</p>}
-              <p id="invitation-description" className="invitation-request">{invitedBy ? "requests the pleasure of the company of" : "Hiruni & Ravindu request the pleasure of the company of"}</p>
+              <p id="invitation-description" className="invitation-request">{invitedBy ? "request the pleasure of the company of" : "Hiruni & Ravindu request the pleasure of the company of"}</p>
               <p className="invitee-name">{inviteeName ?? "Our Family & Friends"}</p>
               <p className="invitation-request">to celebrate the marriage of</p>
               <h2 id="invitation-title"><span>Hiruni</span><i>&amp;</i><span>Ravindu</span></h2>
