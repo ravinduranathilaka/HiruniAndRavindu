@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { Cormorant_Garamond, Josefin_Sans, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
   description: "Join Hiruni and Ravindu as they celebrate their wedding on December 2, 2026.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${cormorant.variable} ${josefin.variable} ${playfair.variable}`}>
       <body>
