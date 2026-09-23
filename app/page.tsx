@@ -42,12 +42,33 @@ export default function Home({ inviteeName, invitedBy, invitationSlug }: { invit
   const invitationButton = useRef<HTMLButtonElement>(null);
   const invitationCloseButton = useRef<HTMLButtonElement>(null);
   const invitationWasOpen = useRef(false);
+  const resumeMusicOnVisible = useRef(false);
 
   useEffect(() => {
     document.body.style.overflow = opened && !invitationOpen ? "" : "hidden";
     window.scrollTo(0, 0);
     return () => { document.body.style.overflow = ""; };
   }, [opened, invitationOpen]);
+
+  useEffect(() => {
+    const updateMusicForVisibility = () => {
+      const music = backgroundMusic.current;
+      if (!music) return;
+      if (document.hidden) {
+        resumeMusicOnVisible.current = !music.paused;
+        music.pause();
+        setMusicPlaying(false);
+      } else if (resumeMusicOnVisible.current) {
+        resumeMusicOnVisible.current = false;
+        music.play().then(() => {
+          if (document.hidden) music.pause();
+          else setMusicPlaying(true);
+        }).catch(() => setMusicPlaying(false));
+      }
+    };
+    document.addEventListener("visibilitychange", updateMusicForVisibility);
+    return () => document.removeEventListener("visibilitychange", updateMusicForVisibility);
+  }, []);
 
   useEffect(() => {
     if (!invitationOpen) {
@@ -83,7 +104,7 @@ export default function Home({ inviteeName, invitedBy, invitationSlug }: { invit
     setOpening(true);
     const envelope = envelopeSound.current;
     if (envelope) {
-      envelope.volume = 0.12;
+      envelope.volume = 0.012;
       envelope.play().catch(() => undefined);
     }
     const music = backgroundMusic.current;
@@ -108,7 +129,8 @@ export default function Home({ inviteeName, invitedBy, invitationSlug }: { invit
     if (music) {
       music.currentTime = 0;
       music.volume = 0.3;
-      music.play().then(() => setMusicPlaying(true)).catch(() => setMusicPlaying(false));
+      if (document.hidden) resumeMusicOnVisible.current = true;
+      else music.play().then(() => setMusicPlaying(true)).catch(() => setMusicPlaying(false));
     }
     setOpened(true);
     if (!finishingOpening) setShowInvitationCue(true);
@@ -134,6 +156,7 @@ export default function Home({ inviteeName, invitedBy, invitationSlug }: { invit
     if (music.paused) music.play().then(() => setMusicPlaying(true)).catch(() => undefined);
     else {
       music.pause();
+      resumeMusicOnVisible.current = false;
       setMusicPlaying(false);
     }
   };
