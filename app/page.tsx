@@ -164,7 +164,7 @@ export default function Home({ inviteeName, invitedBy, invitationSlug }: { invit
   return (
     <main>
       <audio ref={envelopeSound} src="/img/envelope.mp3" preload="none" />
-      <audio ref={backgroundMusic} src="/img/background.mp3" preload="none" loop />
+      <audio ref={backgroundMusic} src="/bgm/alubgm.mp3" preload="none" loop />
 
       {!opened && (
         <div className={`opening-gate${finishingOpening ? " is-finishing" : ""}`}>
