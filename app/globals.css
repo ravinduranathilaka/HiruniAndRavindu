@@ -252,6 +252,15 @@ footer small { display:block; margin-top:1.5rem; color:#897d6b; font-size:.62rem
 .admin-form-message.error { color:var(--admin-red); }
 @keyframes admin-spin { to { transform:rotate(360deg); } }
 .admin-table-wrap { overflow:auto; border:1px solid var(--admin-line); background:#fffefa; }
+.admin-guest-groups { display:grid; gap:.7rem; }
+.admin-guest-group { border:1px solid var(--admin-line); background:#fffefa; }
+.admin-guest-group > summary { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1rem 1.2rem; color:var(--admin-ink); cursor:pointer; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; }
+.admin-guest-group > summary::-webkit-details-marker { display:none; }
+.admin-guest-group > summary::before { content:"+"; color:var(--admin-brass); font-size:1.1rem; line-height:1; }
+.admin-guest-group[open] > summary::before { content:"−"; }
+.admin-guest-group > summary span { margin-right:auto; }
+.admin-guest-group > summary small { color:#8c8374; font-size:.58rem; letter-spacing:.06em; }
+.admin-guest-group > .admin-table-wrap { border-width:1px 0 0; }
 .admin-table { width:100%; border-collapse:collapse; font-size:.72rem; }
 .admin-table th { padding:.8rem 1rem; border-bottom:1px solid var(--admin-line); background:#eeebe3; color:#726b60; font-size:.58rem; font-weight:400; letter-spacing:.12em; text-align:left; text-transform:uppercase; white-space:nowrap; }
 .admin-table td { padding:1rem; border-bottom:1px solid #e7e2d8; vertical-align:top; }

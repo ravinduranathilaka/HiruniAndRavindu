@@ -160,7 +160,7 @@ export default async function AdminPage({
     }),
     prisma.expectedGuest.findMany({
       include: { party: true, rsvp: true },
-      orderBy: [{ party: { name: "asc" } }, { name: "asc" }],
+      orderBy: [{ party: { by: "asc" } }, { party: { name: "asc" } }, { name: "asc" }],
     }),
     prisma.rsvp.findMany({
       include: { expectedGuest: { include: { party: true } } },
@@ -169,6 +169,11 @@ export default async function AdminPage({
   ]);
 
   const guestOptions: GuestOption[] = expectedGuests.map((guest) => ({ id: guest.id, name: invitationName(guest), party: guest.party }));
+  const guestGroups = new Map<string, typeof expectedGuests>();
+  for (const guest of expectedGuests) {
+    const by = guest.party.by?.trim() || "Unspecified";
+    guestGroups.set(by, [...(guestGroups.get(by) ?? []), guest]);
+  }
   const totalInvited = expectedGuests.reduce((sum, guest) => sum + guest.invitedPersons, 0);
   const totalConfirmed = responses.reduce((sum, response) => sum + (response.attending ? response.guestCount : 0), 0);
   const unmatchedResponses = responses.filter((response) => !response.expectedGuestId);
@@ -213,31 +218,38 @@ export default async function AdminPage({
           </div>
 
           {!expectedGuests.length ? <Empty>No guests yet. Add the first invitation above.</Empty> : (
-            <div className="admin-table-wrap">
-              <table className="admin-table admin-guests-table">
-                <thead><tr><th>Name</th><th>Invitation</th><th>Party</th><th>Invited</th><th>Status</th><th>RSVP details</th><th>Actual</th><th>Message</th><th>Received</th><th><span className="sr-only">Actions</span></th></tr></thead>
-                <tbody>{expectedGuests.map((guest) => {
-                  const status = rsvpStatus(guest.rsvp);
-                  const inviteUrl = process.env.ROOT_DOMAIN ? `https://${guest.slug}.${process.env.ROOT_DOMAIN}` : `/invite/${guest.slug}`;
-                  return (
-                    <tr key={guest.id}>
-                      <td className="admin-primary-cell">{invitationName(guest)}</td>
-                      <td className="admin-invitation-link"><a href={inviteUrl} target="_blank" rel="noreferrer">Open</a><CopyInvitationLink url={inviteUrl} /></td>
-                      <td>{guest.party.name}</td>
-                      <td>{guest.invitedPersons}</td>
-                      <td><span className={`admin-status ${status.className}`}>{status.label}</span></td>
-                      <td>{guest.rsvp ? <>{guest.rsvp.fullName}<small>{guest.rsvp.phoneNumber}{guest.rsvp.email ? ` · ${guest.rsvp.email}` : ""}<br />{guest.rsvp.whoAttending ? attendanceLabels[guest.rsvp.whoAttending] : "—"}</small></> : "—"}</td>
-                      <td className={guest.rsvp && guest.rsvp.guestCount > guest.invitedPersons ? "admin-over-count" : ""}>{guest.rsvp?.guestCount ?? "—"}</td>
-                      <td className="admin-message">{guest.rsvp?.message || "—"}</td>
-                      <td>{guest.rsvp?.createdAt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) ?? "—"}</td>
-                      <td><AdminModal title={`Edit ${invitationName(guest)}`}>
-                        <section className="admin-dialog-section"><h3>Invitation</h3><form action={updateExpectedGuest.bind(null, guest.id)} suppressHydrationWarning><ExpectedGuestFields guest={guest} parties={parties} /><div className="admin-form-actions"><AdminSubmitButton>Save invitation</AdminSubmitButton><AdminSubmitButton className="danger" formAction={deleteExpectedGuest.bind(null, guest.id)}>Delete guest</AdminSubmitButton></div></form></section>
-                        <section className="admin-dialog-section"><h3>RSVP</h3>{guest.rsvp ? <form action={updateRsvp.bind(null, guest.rsvp.id)} suppressHydrationWarning><RsvpFields response={guest.rsvp} guests={guestOptions} returnTab="manage" /><div className="admin-form-actions"><AdminSubmitButton>Save RSVP</AdminSubmitButton><AdminSubmitButton className="danger" formAction={deleteRsvp.bind(null, guest.rsvp.id)}>Delete RSVP</AdminSubmitButton></div></form> : <form action={createRsvp} suppressHydrationWarning><RsvpFields guests={guestOptions} returnTab="manage" defaultGuest={guest.id} defaultName={invitationName(guest)} defaultCount={guest.invitedPersons} /><AdminSubmitButton>Add RSVP</AdminSubmitButton></form>}</section>
-                      </AdminModal></td>
-                    </tr>
-                  );
-                })}</tbody>
-              </table>
+            <div className="admin-guest-groups">
+              {[...guestGroups].map(([by, guests], index) => (
+                <details className="admin-guest-group" key={by} name="guest-ledger-by" open={index === 0}>
+                  <summary><span>By {by}</span><small>{guests.length} {guests.length === 1 ? "invitation" : "invitations"}</small></summary>
+                  <div className="admin-table-wrap">
+                    <table className="admin-table admin-guests-table">
+                      <thead><tr><th>Name</th><th>Invitation</th><th>Party</th><th>Invited</th><th>Status</th><th>RSVP details</th><th>Actual</th><th>Message</th><th>Received</th><th><span className="sr-only">Actions</span></th></tr></thead>
+                      <tbody>{guests.map((guest) => {
+                        const status = rsvpStatus(guest.rsvp);
+                        const inviteUrl = process.env.ROOT_DOMAIN ? `https://${guest.slug}.${process.env.ROOT_DOMAIN}` : `/invite/${guest.slug}`;
+                        return (
+                          <tr key={guest.id}>
+                            <td className="admin-primary-cell">{invitationName(guest)}</td>
+                            <td className="admin-invitation-link"><a href={inviteUrl} target="_blank" rel="noreferrer">Open</a><CopyInvitationLink url={inviteUrl} /></td>
+                            <td>{guest.party.name}</td>
+                            <td>{guest.invitedPersons}</td>
+                            <td><span className={`admin-status ${status.className}`}>{status.label}</span></td>
+                            <td>{guest.rsvp ? <>{guest.rsvp.fullName}<small>{guest.rsvp.phoneNumber}{guest.rsvp.email ? ` · ${guest.rsvp.email}` : ""}<br />{guest.rsvp.whoAttending ? attendanceLabels[guest.rsvp.whoAttending] : "—"}</small></> : "—"}</td>
+                            <td className={guest.rsvp && guest.rsvp.guestCount > guest.invitedPersons ? "admin-over-count" : ""}>{guest.rsvp?.guestCount ?? "—"}</td>
+                            <td className="admin-message">{guest.rsvp?.message || "—"}</td>
+                            <td>{guest.rsvp?.createdAt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) ?? "—"}</td>
+                            <td><AdminModal title={`Edit ${invitationName(guest)}`}>
+                              <section className="admin-dialog-section"><h3>Invitation</h3><form action={updateExpectedGuest.bind(null, guest.id)} suppressHydrationWarning><ExpectedGuestFields guest={guest} parties={parties} /><div className="admin-form-actions"><AdminSubmitButton>Save invitation</AdminSubmitButton><AdminSubmitButton className="danger" formAction={deleteExpectedGuest.bind(null, guest.id)}>Delete guest</AdminSubmitButton></div></form></section>
+                              <section className="admin-dialog-section"><h3>RSVP</h3>{guest.rsvp ? <form action={updateRsvp.bind(null, guest.rsvp.id)} suppressHydrationWarning><RsvpFields response={guest.rsvp} guests={guestOptions} returnTab="manage" /><div className="admin-form-actions"><AdminSubmitButton>Save RSVP</AdminSubmitButton><AdminSubmitButton className="danger" formAction={deleteRsvp.bind(null, guest.rsvp.id)}>Delete RSVP</AdminSubmitButton></div></form> : <form action={createRsvp} suppressHydrationWarning><RsvpFields guests={guestOptions} returnTab="manage" defaultGuest={guest.id} defaultName={invitationName(guest)} defaultCount={guest.invitedPersons} /><AdminSubmitButton>Add RSVP</AdminSubmitButton></form>}</section>
+                            </AdminModal></td>
+                          </tr>
+                        );
+                      })}</tbody>
+                    </table>
+                  </div>
+                </details>
+              ))}
             </div>
           )}
         </section>
