@@ -277,6 +277,7 @@ footer small { display:block; margin-top:1.5rem; color:#897d6b; font-size:.62rem
 .admin-guests-table { min-width:90rem; }
 .admin-invitation-link a { display:block; color:var(--admin-brass); }
 .admin-copy-button,.admin-edit-button { margin-top:.4rem; padding:0!important; background:transparent!important; color:var(--admin-brass)!important; font-size:.58rem!important; text-transform:none!important; letter-spacing:.03em!important; }
+.admin-copy-button { display:block; }
 .admin-edit-button { margin:0; }
 .admin-dialog { width:min(48rem,calc(100vw - 2rem)); max-height:88svh; padding:0; overflow:visible; border:0; background:transparent; color:var(--admin-ink); }
 .admin-dialog::backdrop { background:#101817b8; backdrop-filter:blur(3px); }

@@ -19,7 +19,7 @@ import { LoginForm } from "./login-form";
 import { ExpectedGuestFields } from "./expected-guest-fields";
 import { AddExpectedGuestForm } from "./add-expected-guest-form";
 import { invitationName } from "@/lib/invitation";
-import { AdminModal, AdminSubmitButton, CopyInvitationLink } from "./admin-controls";
+import { AdminModal, AdminSubmitButton, CopyInvitationLink, ExportInvitationButton } from "./admin-controls";
 
 export const metadata: Metadata = { title: "Guest ledger — Hiruni & Ravindu" };
 
@@ -231,7 +231,7 @@ export default async function AdminPage({
                         return (
                           <tr key={guest.id}>
                             <td className="admin-primary-cell">{invitationName(guest)}</td>
-                            <td className="admin-invitation-link"><a href={inviteUrl} target="_blank" rel="noreferrer">Open</a><CopyInvitationLink url={inviteUrl} /></td>
+                            <td className="admin-invitation-link"><a href={inviteUrl} target="_blank" rel="noreferrer">Open</a><CopyInvitationLink url={inviteUrl} /><ExportInvitationButton inviteeName={invitationName(guest)} invitedBy={guest.party.by ?? undefined} /></td>
                             <td>{guest.party.name}</td>
                             <td>{guest.invitedPersons}</td>
                             <td><span className={`admin-status ${status.className}`}>{status.label}</span></td>
