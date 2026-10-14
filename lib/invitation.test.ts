@@ -5,6 +5,8 @@ import { invitationGuestCount, invitationName, rsvpGuestCount } from "./invitati
 
 test("invitation names and guest counts follow addition rules", () => {
   assert.equal(invitationName({ namePrefix: "Mr", name: "John" }), "Mr John");
+  assert.equal(invitationName({ namePrefix: null, name: "John" }), "John");
+  assert.equal(invitationName({ name: "Jane", addition: "family", invitedPersons: 3 }), "Jane and family of 3");
   assert.equal(invitationName({ namePrefix: "Mrs", name: "Jane", addition: "husband", invitedPersons: 9 }), "Mrs Jane and husband");
   assert.equal(invitationName({ namePrefix: "Prof", name: "Brown", addition: "family", invitedPersons: 3 }), "Prof Brown and family of 3");
   assert.equal(invitationName({ namePrefix: "Mr", name: "Sam", addition: "family", invitedPersons: 1 }), "Mr Sam and family of 2");

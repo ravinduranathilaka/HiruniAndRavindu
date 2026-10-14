@@ -160,7 +160,7 @@ export default async function AdminPage({
     }),
     prisma.expectedGuest.findMany({
       include: { party: true, rsvp: true },
-      orderBy: [{ party: { by: "asc" } }, { party: { name: "asc" } }, { name: "asc" }],
+      orderBy: { name: "asc" },
     }),
     prisma.rsvp.findMany({
       include: { expectedGuest: { include: { party: true } } },
@@ -168,6 +168,7 @@ export default async function AdminPage({
     }),
   ]);
 
+  expectedGuests.sort((a, b) => (a.party.by?.trim() || "Unspecified").localeCompare(b.party.by?.trim() || "Unspecified") || a.party.name.localeCompare(b.party.name) || a.name.localeCompare(b.name));
   const guestOptions: GuestOption[] = expectedGuests.map((guest) => ({ id: guest.id, name: invitationName(guest), party: guest.party }));
   const guestGroups = new Map<string, typeof expectedGuests>();
   for (const guest of expectedGuests) {

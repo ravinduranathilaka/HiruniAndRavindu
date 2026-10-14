@@ -17,7 +17,7 @@ export function ExpectedGuestFields({
 
   return (
     <div className="admin-form-grid">
-      <label suppressHydrationWarning>Name prefix
+      <label suppressHydrationWarning>Name prefix (optional)
         <select name="namePrefix" defaultValue={guest?.namePrefix ?? ""} suppressHydrationWarning>
           <option value="">None</option>
           {NAME_PREFIXES.map((prefix) => <option key={prefix} value={prefix}>{prefix}</option>)}

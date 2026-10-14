@@ -100,7 +100,8 @@ export async function updateExpectedGuest(guestId: string, formData: FormData) {
   });
   if (!result.success) destination("expected", undefined, "Check the invitation name, addition, and guest count.");
   try {
-    await prisma.expectedGuest.update({ where: { id: guestId }, data: result.data! });
+    const guest = await prisma.expectedGuest.update({ where: { id: guestId }, data: result.data!, select: { slug: true } });
+    revalidatePath(`/invite/${guest.slug}`);
   } catch (error) {
     destination("expected", undefined, databaseError(error));
   }
