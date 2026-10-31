@@ -28,7 +28,7 @@ type GuestOption = { id: string; name: string; party: { name: string } };
 type ResponseRecord = {
   id: string;
   fullName: string;
-  phoneNumber: string;
+  phoneNumber: string | null;
   email: string | null;
   attending: boolean;
   whoAttending: "ONLY_MYSELF" | "MYSELF_AND_OTHER_INVITEES" | "COMPLICATED" | null;
@@ -69,7 +69,7 @@ function RsvpFields({
     <div className="admin-form-grid">
       <input type="hidden" name="returnTab" value={returnTab} suppressHydrationWarning />
       <label suppressHydrationWarning>Full name<input name="fullName" defaultValue={response?.fullName ?? defaultName ?? ""} required maxLength={120} suppressHydrationWarning /></label>
-      <label suppressHydrationWarning>Phone<input name="phoneNumber" type="tel" defaultValue={response?.phoneNumber ?? "+94"} required suppressHydrationWarning /></label>
+      <label suppressHydrationWarning>Phone<input name="phoneNumber" type="tel" defaultValue={response?.phoneNumber ?? ""} suppressHydrationWarning /></label>
       <label suppressHydrationWarning>Email<input name="email" type="email" defaultValue={response?.email ?? ""} suppressHydrationWarning /></label>
       <label suppressHydrationWarning>Response
         <select name="attending" defaultValue={String(response?.attending ?? true)} suppressHydrationWarning>
@@ -236,7 +236,7 @@ export default async function AdminPage({
                             <td>{guest.party.name}</td>
                             <td>{guest.invitedPersons}</td>
                             <td><span className={`admin-status ${status.className}`}>{status.label}</span></td>
-                            <td>{guest.rsvp ? <>{guest.rsvp.fullName}<small>{guest.rsvp.phoneNumber}{guest.rsvp.email ? ` · ${guest.rsvp.email}` : ""}<br />{guest.rsvp.whoAttending ? attendanceLabels[guest.rsvp.whoAttending] : "—"}</small></> : "—"}</td>
+                            <td>{guest.rsvp ? <>{guest.rsvp.fullName}<small>{guest.rsvp.phoneNumber ?? "No phone"}{guest.rsvp.email ? ` · ${guest.rsvp.email}` : ""}<br />{guest.rsvp.whoAttending ? attendanceLabels[guest.rsvp.whoAttending] : "—"}</small></> : "—"}</td>
                             <td className={guest.rsvp && guest.rsvp.guestCount > guest.invitedPersons ? "admin-over-count" : ""}>{guest.rsvp?.guestCount ?? "—"}</td>
                             <td className="admin-message">{guest.rsvp?.message || "—"}</td>
                             <td>{guest.rsvp?.createdAt.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) ?? "—"}</td>
@@ -270,7 +270,7 @@ export default async function AdminPage({
                 <tbody>{unmatchedResponses.map((response) => {
                   const status = rsvpStatus(response);
                   return <tr key={response.id}>
-                    <td className="admin-primary-cell">{response.fullName}<small>{response.phoneNumber}{response.email ? ` · ${response.email}` : ""}</small></td>
+                    <td className="admin-primary-cell">{response.fullName}<small>{response.phoneNumber ?? "No phone"}{response.email ? ` · ${response.email}` : ""}</small></td>
                     <td><span className={`admin-status ${status.className}`}>{status.label}</span></td>
                     <td>{response.whoAttending ? attendanceLabels[response.whoAttending] : "—"}</td>
                     <td>{response.guestCount}</td>

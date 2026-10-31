@@ -1,0 +1,1 @@
+ALTER TABLE "Rsvp" ALTER COLUMN "phoneNumber" DROP NOT NULL;

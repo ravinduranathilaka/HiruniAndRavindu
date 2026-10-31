@@ -10,7 +10,7 @@ datasource db {
 model Rsvp {
   id              String           @id @default(cuid())
   fullName        String
-  phoneNumber     String           @unique
+  phoneNumber     String?          @unique
   email           String?
   attending       Boolean
   whoAttending    AttendanceGroup?
