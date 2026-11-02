@@ -12,8 +12,8 @@ export function ExpectedGuestFields({
 }) {
   const [addition, setAddition] = useState(guest?.addition ?? "");
   const [count, setCount] = useState(guest?.invitedPersons ?? 1);
-  const hasVariableCount = addition === "family" || addition === "children";
-  const fixedCount = !addition ? 1 : hasVariableCount ? Math.max(2, count) : 2;
+  const hasVariableCount = !addition || addition === "family" || addition === "children";
+  const fixedCount = !addition ? count : hasVariableCount ? Math.max(2, count) : 2;
 
   return (
     <div className="admin-form-grid">
@@ -32,7 +32,7 @@ export function ExpectedGuestFields({
       </label>
       <label suppressHydrationWarning>Number
         <select name="invitedPersons" value={fixedCount} disabled={!hasVariableCount} onChange={(event) => setCount(Number(event.target.value))} suppressHydrationWarning>
-          {Array.from({ length: 10 }, (_, index) => index + 1).map((value) => <option key={value} value={value} disabled={hasVariableCount && value === 1}>{value}</option>)}
+          {Array.from({ length: 10 }, (_, index) => index + 1).map((value) => <option key={value} value={value} disabled={Boolean(addition) && hasVariableCount && value === 1}>{value}</option>)}
         </select>
         {!hasVariableCount && <input type="hidden" name="invitedPersons" value={fixedCount} suppressHydrationWarning />}
       </label>

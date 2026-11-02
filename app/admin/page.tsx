@@ -69,8 +69,8 @@ function RsvpFields({
     <div className="admin-form-grid">
       <input type="hidden" name="returnTab" value={returnTab} suppressHydrationWarning />
       <label suppressHydrationWarning>Full name<input name="fullName" defaultValue={response?.fullName ?? defaultName ?? ""} required maxLength={120} suppressHydrationWarning /></label>
-      <label suppressHydrationWarning>Phone<input name="phoneNumber" type="tel" defaultValue={response?.phoneNumber ?? ""} suppressHydrationWarning /></label>
-      <label suppressHydrationWarning>Email<input name="email" type="email" defaultValue={response?.email ?? ""} suppressHydrationWarning /></label>
+      <label suppressHydrationWarning>Phone (optional)<input name="phoneNumber" type="tel" defaultValue={response?.phoneNumber ?? ""} suppressHydrationWarning /></label>
+      <label suppressHydrationWarning>Email (optional)<input name="email" type="email" defaultValue={response?.email ?? ""} suppressHydrationWarning /></label>
       <label suppressHydrationWarning>Response
         <select name="attending" defaultValue={String(response?.attending ?? true)} suppressHydrationWarning>
           <option value="true">Attending</option>
@@ -223,6 +223,10 @@ export default async function AdminPage({
               {[...guestGroups].map(([by, guests], index) => (
                 <details className="admin-guest-group" key={by} name="guest-ledger-by" open={index === 0}>
                   <summary><span>By {by}</span><small>{guests.length} {guests.length === 1 ? "invitation" : "invitations"}</small></summary>
+                  <div className="admin-guest-group-actions">
+                    <p>Accepted {guests.reduce((total, guest) => total + (guest.rsvp?.attending ? guest.invitedPersons : 0), 0)} · Rejected {guests.reduce((total, guest) => total + (guest.rsvp && !guest.rsvp.attending ? guest.invitedPersons : 0), 0)} · Await {guests.reduce((total, guest) => total + (!guest.rsvp ? guest.invitedPersons : 0), 0)}</p>
+                    <a href={`/admin/export?by=${encodeURIComponent(by)}`}>Export XLSX</a>
+                  </div>
                   <div className="admin-table-wrap">
                     <table className="admin-table admin-guests-table">
                       <thead><tr><th>Name</th><th>Invitation</th><th>Party</th><th>Invited</th><th>Status</th><th>RSVP details</th><th>Actual</th><th>Message</th><th>Received</th><th><span className="sr-only">Actions</span></th></tr></thead>

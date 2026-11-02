@@ -4,7 +4,7 @@ export const INVITATION_ADDITIONS = ["husband", "wife", "partner", "guest", "chi
 export type InvitationAddition = (typeof INVITATION_ADDITIONS)[number];
 
 export function invitationGuestCount(addition?: string | null, requestedCount?: number) {
-  if (!addition) return 1;
+  if (!addition) return Math.min(10, Math.max(1, requestedCount ?? 1));
   if (addition !== "family" && addition !== "children") return 2;
   return Math.min(10, Math.max(2, requestedCount ?? 2));
 }

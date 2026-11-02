@@ -260,6 +260,9 @@ footer small { display:block; margin-top:1.5rem; color:#897d6b; font-size:.62rem
 .admin-guest-group[open] > summary::before { content:"−"; }
 .admin-guest-group > summary span { margin-right:auto; }
 .admin-guest-group > summary small { color:#8c8374; font-size:.58rem; letter-spacing:.06em; }
+.admin-guest-group-actions { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:.5rem 1rem; padding:.2rem 1.2rem .8rem; }
+.admin-guest-group-actions p { margin:0; color:#746d61; font-size:.65rem; }
+.admin-guest-group-actions a { color:var(--admin-brass); font-size:.65rem; text-decoration:underline; text-underline-offset:.2rem; }
 .admin-guest-group > .admin-table-wrap { border-width:1px 0 0; }
 .admin-table { width:100%; border-collapse:collapse; font-size:.72rem; }
 .admin-table th { padding:.8rem 1rem; border-bottom:1px solid var(--admin-line); background:#eeebe3; color:#726b60; font-size:.58rem; font-weight:400; letter-spacing:.12em; text-align:left; text-transform:uppercase; white-space:nowrap; }

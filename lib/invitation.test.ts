@@ -12,7 +12,8 @@ test("invitation names and guest counts follow addition rules", () => {
   assert.equal(invitationName({ namePrefix: "Mr", name: "Sam", addition: "family", invitedPersons: 1 }), "Mr Sam and family of 2");
   assert.equal(invitationName({ namePrefix: "Ven", name: "Soma", addition: "children", invitedPersons: 4 }), "Ven Soma and 3 children");
   assert.equal(invitationName({ namePrefix: "Mx", name: "Alex", addition: "guest", invitedPersons: 8 }), "Mx Alex and guest");
-  assert.equal(invitationGuestCount(null, 10), 1);
+  assert.equal(invitationGuestCount(null, 10), 10);
+  assert.equal(invitationGuestCount(null, 2), 2);
   assert.equal(invitationGuestCount("partner", 10), 2);
   assert.equal(rsvpGuestCount(false, undefined, 4), 0);
   assert.equal(rsvpGuestCount(true, "ONLY_MYSELF", 4), 1);

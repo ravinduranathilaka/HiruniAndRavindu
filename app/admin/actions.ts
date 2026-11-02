@@ -30,8 +30,8 @@ const expectedGuestSchema = z.object({
 const partySchema = z.object({ by: z.string().trim().max(120).transform((value) => value || null), name: text, maxGuestCount: count });
 const rsvpSchema = z.object({
   fullName: text,
-  phoneNumber: z.string().transform((value) => value.trim() ? normalizeSriLankanPhone(value) : null).pipe(z.string().regex(SRI_LANKAN_PHONE_NUMBER).nullable()),
-  email: z.string().trim().max(254).refine((value) => !value || z.email().safeParse(value).success),
+  phoneNumber: z.string().default("").transform((value) => value.trim() ? normalizeSriLankanPhone(value) : null).pipe(z.string().regex(SRI_LANKAN_PHONE_NUMBER).nullable()),
+  email: z.string().trim().max(254).refine((value) => !value || z.email().safeParse(value).success).default(""),
   attending: z.enum(["true", "false"]),
   whoAttending: z.enum(["ONLY_MYSELF", "MYSELF_AND_OTHER_INVITEES", "COMPLICATED"]).optional(),
   guestCount: count,
