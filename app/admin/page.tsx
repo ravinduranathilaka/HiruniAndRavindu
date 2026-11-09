@@ -224,7 +224,7 @@ export default async function AdminPage({
                 <details className="admin-guest-group" key={by} name="guest-ledger-by" open={index === 0}>
                   <summary><span>By {by}</span><small>{guests.length} {guests.length === 1 ? "invitation" : "invitations"}</small></summary>
                   <div className="admin-guest-group-actions">
-                    <p>Accepted {guests.reduce((total, guest) => total + (guest.rsvp?.attending ? guest.invitedPersons : 0), 0)} · Rejected {guests.reduce((total, guest) => total + (guest.rsvp && !guest.rsvp.attending ? guest.invitedPersons : 0), 0)} · Await {guests.reduce((total, guest) => total + (!guest.rsvp ? guest.invitedPersons : 0), 0)}</p>
+                    <p>Accepted {guests.reduce((total, guest) => total + (guest.rsvp?.attending ? guest.rsvp.guestCount : 0), 0)} · Rejected {guests.reduce((total, guest) => total + (guest.rsvp && !guest.rsvp.attending ? guest.invitedPersons : 0), 0)} · Await {guests.reduce((total, guest) => total + (!guest.rsvp ? guest.invitedPersons : 0), 0)}</p>
                     <a href={`/admin/export?by=${encodeURIComponent(by)}`}>Export XLSX</a>
                   </div>
                   <div className="admin-table-wrap">
